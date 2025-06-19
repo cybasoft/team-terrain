@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
 import { config } from '../config/env';
 import { canMovePinForUser, canDeletePinForUser, isAdmin } from '../lib/permissions';
+import { formatLocation } from '../lib/coordinates';
 import MapSearchControl from './MapSearchControl';
 
 interface MapComponentProps {
@@ -177,7 +178,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 <div class="text-xs text-gray-600 mt-1 hidden">${user.pinned ? 'Pinned Location' : 'Located'}</div>
                 <div class="text-xs text-gray-500 mt-1">${user.email}</div>
                 <div class="text-xs text-blue-600 mt-2">
-                  ${user.location![0].toFixed(6)}, ${user.location![1].toFixed(6)}
+                  ${formatLocation(user)}
                 </div>
                 <div class="text-xs mt-2 ${canMovePin ? 'text-green-600' : 'text-orange-600'}">
                   ${canMovePin ? 

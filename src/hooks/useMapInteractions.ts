@@ -4,7 +4,7 @@ import { User } from '../types/User';
 import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
 import { authenticatedFetch } from '../lib/auth';
-import { formatCoordinates } from '../lib/coordinates';
+import { formatCoordinates, reverseGeocode } from '../lib/coordinates';
 import { canMovePinForUser, canPinForUser, canDeletePinForUser } from '../lib/permissions';
 
 export const useMapInteractions = (
@@ -72,7 +72,10 @@ export const useMapInteractions = (
 
   const handlePinConfirm = async (userId: string, coordinates: [number, number]) => {
     const user = users.find(u => u.id === userId);
-    if (!user) return;
+    if (!user) {
+      console.error(`handlePinConfirm: User with ID ${userId} not found`);
+      return;
+    }
 
     // Final permission check before pinning
     if (!canPinForUser(currentUser, user)) {
@@ -85,12 +88,21 @@ export const useMapInteractions = (
     }
 
     try {
+      console.log(`Pinning user ${user.name} at coordinates: ${coordinates[0]}, ${coordinates[1]}`);
+      
+      // Get city, state and country information using reverse geocoding
+      const locationInfo = await reverseGeocode(coordinates);
+      console.log(`Pin confirm: Got location info:`, locationInfo);
+      
       const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
         method: 'POST',
         body: JSON.stringify({
           userId: userId,
           name: user.name,
           coordinates: formatCoordinates(coordinates), // Send as string
+          city: locationInfo.city || '',
+          state: locationInfo.state || '',
+          country: locationInfo.country || '',
           timestamp: new Date().toISOString(),
           action: 'pin_location'
         }),
@@ -100,7 +112,15 @@ export const useMapInteractions = (
         setUsers(prevUsers => {
           const updatedUsers = prevUsers.map(user =>
             user.id === userId
-              ? { ...user, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
+              ? { 
+                  ...user, 
+                  coordinates: formatCoordinates(coordinates), 
+                  location: coordinates, 
+                  pinned: true,
+                  city: locationInfo.city || '',
+                  state: locationInfo.state || '',
+                  country: locationInfo.country || ''
+                }
               : user
           );
           return updatedUsers;
@@ -111,7 +131,17 @@ export const useMapInteractions = (
           description: `${selectedUser?.name} has been added to the map`,
         });
       } else {
-        throw new Error('Failed to save to server');
+        // Get error details if available
+        let errorDetails = '';
+        try {
+          const errorText = await response.text();
+          errorDetails = errorText ? ` Details: ${errorText}` : '';
+        } catch (e) {
+          // Ignore errors parsing error details
+        }
+        
+        console.error(`API error saving location: ${response.status}${errorDetails}`);
+        throw new Error(`Failed to save to server: ${response.status}${errorDetails}`);
       }
     } catch (error) {
       console.error('Error saving location:', error);
@@ -130,7 +160,10 @@ export const useMapInteractions = (
 
   const handlePinDrag = useCallback(async (userId: string, coordinates: [number, number]) => {
     const user = users.find(u => u.id === userId);
-    if (!user) return;
+    if (!user) {
+      console.error(`handlePinDrag: User with ID ${userId} not found`);
+      return;
+    }
 
     // Check permissions before allowing drag
     if (!canMovePinForUser(currentUser, user)) {
@@ -145,24 +178,52 @@ export const useMapInteractions = (
     }
 
     try {
+      // Store original values in case we need to revert
+      const originalCoordinates = user.location;
+      const originalCity = user.city;
+      const originalState = user.state;
+      const originalCountry = user.country;
+
+      console.log(`Starting pin drag for user ${user.name} to ${coordinates[0]}, ${coordinates[1]}`);
+
+      // Get city, state and country information using reverse geocoding
+      const locationInfo = await reverseGeocode(coordinates);
+      console.log('Received location info from geocoding:', locationInfo);
+      
       const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
         method: 'POST',
         body: JSON.stringify({
           userId: userId,
           name: user.name,
           coordinates: formatCoordinates(coordinates), // Send as string
+          city: locationInfo.city || '', 
+          state: locationInfo.state || '',
+          country: locationInfo.country || '',
           timestamp: new Date().toISOString(),
           action: 'update_location'
         }),
       });
 
       if (response.ok) {
+        // Update the users array with new coordinates and location info
         setUsers(prevUsers => {
           const updatedUsers = prevUsers.map(u =>
             u.id === userId
-              ? { ...u, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
+              ? { 
+                  ...u, 
+                  coordinates: formatCoordinates(coordinates), 
+                  location: coordinates, 
+                  pinned: true,
+                  city: locationInfo.city || u.city || '',
+                  state: locationInfo.state || u.state || '',
+                  country: locationInfo.country || u.country || ''
+                }
               : u
           );
+          
+          console.log(`User ${user.name} updated with new location:`, 
+            `city=${locationInfo.city}, state=${locationInfo.state}, country=${locationInfo.country}`);
+            
           return updatedUsers;
         });
         
@@ -171,12 +232,24 @@ export const useMapInteractions = (
           description: `${user.name}'s location has been updated.`,
         });
       } else {
+        // Get error details if available
+        let errorDetails = '';
+        try {
+          const errorText = await response.text();
+          errorDetails = errorText ? ` Details: ${errorText}` : '';
+        } catch (e) {
+          // Ignore errors parsing error details
+        }
+        
+        console.error(`API error updating location: ${response.status}${errorDetails}`);
+        
         // Revert the marker position on failure
         toast({
           title: "Error updating location",
           description: "Failed to save new location to server. Position reverted.",
           variant: "destructive"
         });
+        
         // Force re-render to revert marker position
         setUsers(prevUsers => [...prevUsers]);
       }
@@ -187,6 +260,7 @@ export const useMapInteractions = (
         description: "Failed to save new location to server. Position reverted.",
         variant: "destructive"
       });
+      
       // Force re-render to revert marker position
       setUsers(prevUsers => [...prevUsers]);
     }
@@ -204,22 +278,40 @@ export const useMapInteractions = (
     }
 
     try {
+      // Get city, state and country information using reverse geocoding
+      const locationInfo = await reverseGeocode(coordinates);
+      
       const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
         method: 'POST',
         body: JSON.stringify({
           userId: user.id,
           name: user.name,
           coordinates: formatCoordinates(coordinates), // Send as string
+          city: locationInfo.city,
+          state: locationInfo.state,
+          country: locationInfo.country,
           timestamp: new Date().toISOString(),
           action: 'pin_location'
         }),
       });
 
       if (response.ok) {
+        // We've already called reverseGeocode earlier, so we use that same locationInfo here
+        const locationInfo = await reverseGeocode(coordinates);
+        console.log(`User drop: Got location info for ${user.name}:`, locationInfo);
+        
         setUsers(prevUsers => {
           const updatedUsers = prevUsers.map(u =>
             u.id === user.id
-              ? { ...u, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
+              ? { 
+                  ...u, 
+                  coordinates: formatCoordinates(coordinates), 
+                  location: coordinates, 
+                  pinned: true,
+                  city: locationInfo.city || '',
+                  state: locationInfo.state || '',
+                  country: locationInfo.country || ''
+                }
               : u
           );
           return updatedUsers;

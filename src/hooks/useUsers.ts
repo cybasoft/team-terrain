@@ -14,6 +14,9 @@ interface RawUserData {
   password: string;
   coordinates?: string;
   location?: [number, number] | string | null;
+  city?: string;
+  state?: string;
+  country?: string;
 }
 
 export const useUsers = () => {
@@ -61,7 +64,10 @@ export const useUsers = () => {
               email: user.email || '', // Ensure email is not undefined
               coordinates: user.coordinates, // Keep original string
               location: parsedLocation, // Parsed array
-              pinned: parsedLocation !== null
+              pinned: parsedLocation !== null,
+              city: user.city || '', // Ensure city is always defined
+              state: user.state || '', // Ensure state is always defined
+              country: user.country || '' // Ensure country is always defined
             };
           });
           
