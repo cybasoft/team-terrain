@@ -1,0 +1,61 @@
+
+{
+  "users": [
+    {
+      "id": "user_001",
+      "name": "Alice Johnson",
+      "password": "alice123",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_002", 
+      "name": "Bob Smith",
+      "password": "bob456",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_003",
+      "name": "Carol Williams",
+      "password": "carol789",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_004",
+      "name": "David Brown",
+      "password": "david321",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_005",
+      "name": "Emma Davis",
+      "password": "emma654",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_006",
+      "name": "Frank Miller",
+      "password": "frank987",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_007",
+      "name": "Grace Wilson",
+      "password": "grace246",
+      "location": null,
+      "pinned": false
+    },
+    {
+      "id": "user_008",
+      "name": "Henry Taylor",
+      "password": "henry135",
+      "location": null,
+      "pinned": false
+    }
+  ]
+}
