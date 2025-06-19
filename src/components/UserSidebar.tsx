@@ -16,7 +16,7 @@ interface UserSidebarProps {
 const UserSidebar: React.FC<UserSidebarProps> = ({ users, isOpen, onToggle, onUserSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const unpinnedUsers = users.filter(user => !user.pinned);
+  const unpinnedUsers = users.filter(user => !user.location);
   const filteredUsers = unpinnedUsers.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -74,7 +74,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, isOpen, onToggle, onUs
                 <div className="text-center py-8">
                   <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">
-                    {searchTerm ? 'No users found' : 'All users are pinned!'}
+                    {searchTerm ? 'No users found' : 'All users have locations!'}
                   </p>
                 </div>
               ) : (
@@ -108,7 +108,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, isOpen, onToggle, onUs
           <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="text-sm text-gray-600 text-center">
               <div className="flex justify-between">
-                <span>Unpinned: {unpinnedUsers.length}</span>
+                <span>No Location: {unpinnedUsers.length}</span>
                 <span>Total: {users.length}</span>
               </div>
             </div>

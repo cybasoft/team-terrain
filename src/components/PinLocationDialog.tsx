@@ -33,18 +33,16 @@ const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
     setIsLoading(true);
     setError('');
 
-    // Simulate password verification
-    setTimeout(() => {
-      if (password === user.password) {
-        onConfirm(user.id, password, coordinates);
-        setPassword('');
-        setError('');
-        onClose();
-      } else {
-        setError('Incorrect password. Please try again.');
-      }
-      setIsLoading(false);
-    }, 500);
+    // Verify password matches the user's password
+    if (password === user.password) {
+      onConfirm(user.id, password, coordinates);
+      setPassword('');
+      setError('');
+      onClose();
+    } else {
+      setError('Incorrect password. Please try again.');
+    }
+    setIsLoading(false);
   };
 
   const handleClose = () => {

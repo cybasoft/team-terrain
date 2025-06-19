@@ -8,13 +8,14 @@ import { config } from '../config/env';
 interface MapComponentProps {
   users: User[];
   onMapClick: (coordinates: [number, number]) => void;
+  onPinDrag: (userId: string, coordinates: [number, number]) => void;
   mapboxToken: string;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, mapboxToken }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDrag, mapboxToken }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const markers = useRef<Map<string, mapboxgl.Marker>>(new Map());
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -34,7 +35,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, mapboxTo
     );
 
     map.current.on('click', (e) => {
-      onMapClick([e.lngLat.lng, e.lngLat.lat]);
+      // Only trigger map click if not clicking on a marker
+      const features = map.current!.queryRenderedFeatures(e.point);
+      if (features.length === 0) {
+        onMapClick([e.lngLat.lng, e.lngLat.lat]);
+      }
     });
 
     return () => {
@@ -47,23 +52,50 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, mapboxTo
 
     // Clear existing markers
     markers.current.forEach(marker => marker.remove());
-    markers.current = [];
+    markers.current.clear();
 
-    // Add markers for pinned users
-    users.filter(user => user.pinned && user.location).forEach(user => {
+    // Add markers for users with locations (regardless of pinned status)
+    users.filter(user => user.location && user.location.length === 2).forEach(user => {
+      const markerElement = document.createElement('div');
+      markerElement.className = 'marker-custom';
+      markerElement.style.width = '20px';
+      markerElement.style.height = '20px';
+      markerElement.style.borderRadius = '50%';
+      markerElement.style.backgroundColor = user.pinned ? '#3B82F6' : '#10B981';
+      markerElement.style.border = '2px solid white';
+      markerElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      markerElement.style.cursor = 'grab';
+
       const marker = new mapboxgl.Marker({
-        color: '#3B82F6'
+        element: markerElement,
+        draggable: true
       })
         .setLngLat(user.location!)
         .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`<div class="font-semibold">${user.name}</div>`)
+          new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
+            .setHTML(`
+              <div class="font-semibold text-sm">${user.name}</div>
+              <div class="text-xs text-gray-600">${user.pinned ? 'Pinned' : 'Located'}</div>
+            `)
         )
         .addTo(map.current!);
-      
-      markers.current.push(marker);
+
+      // Handle drag end event
+      marker.on('dragend', () => {
+        const lngLat = marker.getLngLat();
+        const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
+        console.log(`User ${user.name} dragged to:`, newCoordinates);
+        onPinDrag(user.id, newCoordinates);
+      });
+
+      // Prevent marker click from triggering map click
+      markerElement.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      markers.current.set(user.id, marker);
     });
-  }, [users]);
+  }, [users, onPinDrag]);
 
   return (
     <div className="relative w-full h-full">

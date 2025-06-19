@@ -27,7 +27,15 @@ export const useUsers = () => {
         const response = await authenticatedFetch(API_ENDPOINTS.USERS);
         if (response.ok) {
           const data = await response.json();
-          setUsers(data.users || data);
+          const fetchedUsers = data.users || data;
+          
+          // Set pinned status based on whether user has coordinates
+          const processedUsers = fetchedUsers.map((user: User) => ({
+            ...user,
+            pinned: user.location !== null && Array.isArray(user.location) && user.location.length === 2
+          }));
+          
+          setUsers(processedUsers);
         } else {
           console.error('Failed to fetch users from API', response.status, response.statusText);
           toast({

@@ -101,3 +101,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom marker styles */
+.marker-custom {
+  transition: all 0.2s ease-in-out;
+}
+
+.marker-custom:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4) !important;
+}
+
+.marker-custom:active {
+  cursor: grabbing !important;
+}
