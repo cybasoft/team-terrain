@@ -159,7 +159,7 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
 
   return (
     <TooltipProvider>
-      <div className={`relative max-w-full ${className}`}>
+      <div className={`relative ${className}`}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
           <Input
@@ -173,7 +173,7 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={!hasAvailableUsers}
-            className={`pl-10 pr-16 sm:pr-24 shadow-lg border-gray-200 text-sm ${
+            className={`pl-10 pr-24 shadow-lg border-gray-200 ${
               !hasAvailableUsers ? 'bg-gray-50 text-gray-500' : 'bg-white'
             }`}
             onFocus={() => results.length > 0 && setShowResults(true)}

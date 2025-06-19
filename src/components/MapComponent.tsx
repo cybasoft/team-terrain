@@ -412,13 +412,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <div className="relative w-full h-full">
       {/* Search Control - positioned to leave space for navigation controls */}
-      <div className="absolute top-4 left-4 right-14 md:right-16 z-10">
+      <div className="absolute top-4 left-4 right-20 z-20">
         <MapSearchControl
           mapboxToken={mapboxToken}
           onLocationSelect={handleLocationSearch}
           currentUser={currentUser}
           hasAvailableUsers={hasAvailableUsers?.() ?? true}
-          className="w-full"
+          className="max-w-md"
         />
       </div>
 
