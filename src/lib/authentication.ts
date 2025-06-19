@@ -20,8 +20,6 @@ export interface AuthResponse {
  */
 export const authenticateUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    console.log('Attempting to authenticate user with email:', credentials.email);
-    
     // First, fetch all users from the API
     const usersResponse = await authenticatedFetch(API_ENDPOINTS.USERS);
     
@@ -32,8 +30,6 @@ export const authenticateUser = async (credentials: LoginCredentials): Promise<A
     const userData = await usersResponse.json();
     const users: User[] = userData.users || userData;
     
-    console.log('Fetched users for authentication:', users.length);
-    
     // Find user by email and password
     // In a real system, you'd send credentials to a login endpoint
     const authenticatedUser = users.find(user => 
@@ -42,13 +38,11 @@ export const authenticateUser = async (credentials: LoginCredentials): Promise<A
     );
     
     if (authenticatedUser) {
-      console.log('Authentication successful for user:', authenticatedUser.name);
       return {
         success: true,
         user: authenticatedUser
       };
     } else {
-      console.log('Authentication failed: Invalid email or password');
       return {
         success: false,
         message: 'Invalid email or password. Please check your credentials and try again.'

@@ -75,4 +75,11 @@ The app has two levels of access for pin management:
 - **Pin Status**: Tooltips and popups show lock/unlock status
 - **Permission Text**: Header shows current user's capabilities
 
+### Security Features
+
+- **No Password Required for Pinning**: Users are already authenticated, so no additional password verification is needed for pin operations
+- **Secure Logging**: Console logs that could leak sensitive user data, coordinates, or authentication information have been removed from production code
+- **Permission-Based Access**: All pin creation and movement operations are validated based on user permissions
+- **Session Management**: User sessions are securely managed with proper validation
+
 **Note:** The API authorization token is required for fetching user data and validating credentials.

@@ -71,8 +71,6 @@ export const useMapInteractions = (
   };
 
   const handlePinConfirm = async (userId: string, coordinates: [number, number]) => {
-    console.log('Attempting to pin user:', userId, 'at coordinates:', coordinates);
-    
     const user = users.find(u => u.id === userId);
     if (!user) return;
 
@@ -131,8 +129,6 @@ export const useMapInteractions = (
   };
 
   const handlePinDrag = async (userId: string, coordinates: [number, number]) => {
-    console.log('Pin dragged for user:', userId, 'to coordinates:', coordinates);
-    
     const user = users.find(u => u.id === userId);
     if (!user) return;
 

@@ -39,18 +39,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
         email: email.trim(), 
         password: password.trim() 
       });
-      console.log('API authentication result:', authResult);
       
       if (authResult.success && authResult.user) {
-        console.log('API authentication successful for:', authResult.user.name);
         onLogin(authResult.user);
       } else {
         // Fallback to local validation if API fails
-        console.log('API authentication failed, trying local validation...');
         const localUser = validateUserCredentials(users, email.trim(), password.trim());
         
         if (localUser) {
-          console.log('Local authentication successful for:', localUser.name);
           onLogin(localUser);
         } else {
           setError(authResult.message || 'Invalid email or password. Please check your credentials and try again.');
@@ -62,7 +58,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
       const localUser = validateUserCredentials(users, email.trim(), password.trim());
       
       if (localUser) {
-        console.log('Fallback authentication successful for:', localUser.name);
         onLogin(localUser);
       } else {
         setError('Authentication failed. Please check your credentials and try again.');

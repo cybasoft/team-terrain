@@ -18,10 +18,8 @@ export const useAuth = () => {
           
           const isValid = await validateUserSession(user);
           if (isValid) {
-            console.log('Session restored for user:', user.name);
             setCurrentUser(user);
           } else {
-            console.log('Stored session is invalid, clearing...');
             localStorage.removeItem('current-user');
           }
         }
@@ -37,14 +35,12 @@ export const useAuth = () => {
   }, []);
 
   const handleLogin = (user: User) => {
-    console.log('User logged in:', user.name);
     setCurrentUser(user);
     // Store user session in localStorage for persistence
     localStorage.setItem('current-user', JSON.stringify(user));
   };
 
   const handleLogout = () => {
-    console.log('User logged out');
     setCurrentUser(null);
     // Clear stored session
     localStorage.removeItem('current-user');

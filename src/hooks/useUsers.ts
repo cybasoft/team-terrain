@@ -40,8 +40,6 @@ export const useUsers = () => {
           const data = await response.json();
           const fetchedUsers = data.users || data;
           
-          console.log('Raw users data from API:', fetchedUsers);
-          
           // Ensure we have an array of users
           if (!Array.isArray(fetchedUsers)) {
             console.error('API response is not an array:', fetchedUsers);
@@ -50,13 +48,6 @@ export const useUsers = () => {
           
           // Set pinned status based on whether user has coordinates
           const processedUsers = fetchedUsers.map((user: RawUserData): User => {
-            console.log(`Processing user: ${user.name}`, {
-              id: user.id,
-              email: user.email,
-              coordinates: user.coordinates,
-              location: user.location
-            });
-            
             // Ensure user has required email field
             if (!user.email) {
               console.warn(`User ${user.name} missing email address`);
@@ -64,8 +55,6 @@ export const useUsers = () => {
             
             // Try to parse coordinates from both 'coordinates' and 'location' fields
             const parsedLocation = parseCoordinates(user.coordinates) || parseCoordinates(user.location);
-            
-            console.log(`User ${user.name} parsed location:`, parsedLocation);
             
             return {
               ...user,
@@ -76,7 +65,6 @@ export const useUsers = () => {
             };
           });
           
-          console.log('Processed users with pinned status:', processedUsers);
           setUsers(processedUsers);
         } else {
           console.error('Failed to fetch users from API', response.status, response.statusText);

@@ -59,11 +59,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapCl
 
   useEffect(() => {
     if (!map.current || !mapReady) {
-      console.log('Map not ready yet, skipping marker update. Map:', !!map.current, 'Ready:', mapReady);
       return;
     }
-
-    console.log('MapComponent: Processing users for markers:', users);
 
     // Clear existing markers
     markers.current.forEach(marker => marker.remove());
@@ -71,11 +68,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapCl
 
     // Add markers for users with locations (regardless of pinned status)
     const usersWithLocations = users.filter(user => user.location && user.location.length === 2);
-    console.log('Users with valid locations:', usersWithLocations);
 
     usersWithLocations.forEach(user => {
-      console.log(`Adding marker for ${user.name} at:`, user.location);
-      
       const markerElement = document.createElement('div');
       markerElement.className = 'marker-custom';
       markerElement.style.width = '20px';
@@ -165,7 +159,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapCl
         marker.on('dragend', () => {
           const lngLat = marker.getLngLat();
           const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
-          console.log(`User ${user.name} dragged to:`, newCoordinates);
           onPinDrag(user.id, newCoordinates);
         });
       }
@@ -173,7 +166,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapCl
       markers.current.set(user.id, marker);
     });
 
-    console.log(`Added ${markers.current.size} markers to map`);
   }, [users, currentUser, onPinDrag, mapReady]);
 
   return (

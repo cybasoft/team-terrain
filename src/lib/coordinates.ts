@@ -4,15 +4,12 @@
  * @returns [lng, lat] array or null if invalid
  */
 export const parseCoordinates = (coords: string | number[] | null | undefined): [number, number] | null => {
-  console.log('Parsing coordinates:', coords, 'Type:', typeof coords);
-  
   if (!coords) return null;
 
   // If already an array of numbers
   if (Array.isArray(coords) && coords.length === 2) {
     const [lng, lat] = coords;
     if (typeof lng === 'number' && typeof lat === 'number') {
-      console.log('Parsed array coordinates:', [lng, lat]);
       return [lng, lat];
     }
   }
@@ -24,29 +21,20 @@ export const parseCoordinates = (coords: string | number[] | null | undefined): 
 
     // Split by comma and parse
     const parts = trimmed.split(',').map(part => part.trim());
-    console.log('String parts:', parts);
     
     if (parts.length === 2) {
       const lng = parseFloat(parts[0]);
       const lat = parseFloat(parts[1]);
       
-      console.log('Parsed numbers:', { lng, lat });
-      
       if (!isNaN(lng) && !isNaN(lat)) {
         // Validate coordinate ranges
         if (lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90) {
-          console.log('Valid coordinates parsed:', [lng, lat]);
           return [lng, lat];
-        } else {
-          console.log('Coordinates out of valid range:', { lng, lat });
         }
-      } else {
-        console.log('Failed to parse numbers:', { lng, lat });
       }
     }
   }
 
-  console.log('Failed to parse coordinates, returning null');
   return null;
 };
 
