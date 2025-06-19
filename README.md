@@ -1,73 +1,30 @@
-# Welcome to your Lovable project
+# Employees Map
 
-## Project info
+## Setup
 
-**URL**: https://lovable.dev/projects/a42f8530-414d-4c3e-91d2-7f63d29af739
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/a42f8530-414d-4c3e-91d2-7f63d29af739) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+```
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+cp .env.example .env
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Required Variables
+- `VITE_MAPBOX_ACCESS_TOKEN`: Your Mapbox access token (get one from [Mapbox](https://account.mapbox.com/access-tokens/))
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Optional Variables
+- `VITE_APP_NAME`: Application name (default: "Employees Map")
+- `VITE_APP_VERSION`: Application version (default: "1.0.0")
+- `VITE_DEFAULT_MAP_CENTER_LNG`: Default map longitude (default: 36.8219 - Nairobi)
+- `VITE_DEFAULT_MAP_CENTER_LAT`: Default map latitude (default: -1.2921 - Nairobi)
+- `VITE_DEFAULT_MAP_ZOOM`: Default map zoom level (default: 10)
+- `VITE_MAP_STYLE`: Mapbox map style (default: "mapbox://styles/mapbox/light-v11")
+- `VITE_DEBUG_MODE`: Enable debug mode (default: true in development)
+- `VITE_LOG_LEVEL`: Logging level (default: "debug")
 
-**Use GitHub Codespaces**
+### API Configuration
+- `VITE_API_BASE_URL`: Base URL for API endpoints
+- `VITE_API_AUTH_TOKEN`: Authorization token for API requests (Bearer token)
+- `VITE_LOCATION_TRACKER_ENDPOINT`: Location tracker endpoint path
+- `VITE_USERS_ENDPOINT`: Users endpoint path
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/a42f8530-414d-4c3e-91d2-7f63d29af739) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Note:** The API authorization token is used for authenticating requests to your backend API endpoints. If not provided, requests will be made without authentication headers.

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
+import { config } from '../config/env';
 
 interface MapComponentProps {
   users: User[];
@@ -22,9 +23,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, mapboxTo
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [36.8219, -1.2921], // Nairobi, Kenya coordinates
-      zoom: 10,
+      style: config.mapbox.mapStyle,
+      center: [config.mapbox.defaultCenter.lng, config.mapbox.defaultCenter.lat],
+      zoom: config.mapbox.defaultZoom,
     });
 
     map.current.addControl(

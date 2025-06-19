@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { User } from '../types/User';
 import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
+import { authenticatedFetch } from '../lib/auth';
 
 export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React.SetStateAction<User[]>>) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,11 +38,8 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
     if (!user) return;
 
     try {
-      const response = await fetch(API_ENDPOINTS.LOCATION_TRACKER, {
+      const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           userId: userId,
           name: user.name,
