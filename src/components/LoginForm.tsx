@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Lock, User, AlertCircle } from 'lucide-react';
+import { Lock, AlertCircle } from 'lucide-react';
 import { User as UserType } from '../types/User';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,15 +13,14 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !password.trim()) {
-      setError('Please enter both name and password');
+    if (!password.trim()) {
+      setError('Please enter a password');
       return;
     }
 
@@ -30,16 +29,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
 
     // Simulate authentication delay
     setTimeout(() => {
-      const user = users.find(u => 
-        u.name.toLowerCase() === name.trim().toLowerCase() && 
-        u.password === password.trim()
-      );
+      const user = users.find(u => u.password === password.trim());
 
       if (user) {
         console.log('Login successful for:', user.name);
         onLogin(user);
       } else {
-        setError('Invalid name or password');
+        setError('Invalid password');
       }
       setIsLoading(false);
     }, 500);
@@ -54,27 +50,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
           </div>
           <CardTitle>Nairobi Location Tracker</CardTitle>
           <CardDescription>
-            Enter your credentials to access the map
+            Enter your password to access the map
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="flex items-center space-x-2">
-                <User className="h-4 w-4" />
-                <span>Name</span>
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={isLoading}
-                className={error ? 'border-red-300' : ''}
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center space-x-2">
                 <Lock className="h-4 w-4" />
@@ -101,7 +81,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !name.trim() || !password.trim()}
+              disabled={isLoading || !password.trim()}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
@@ -109,11 +89,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <div className="text-sm">
-              <p className="font-medium text-blue-900 mb-2">Demo Users:</p>
+              <p className="font-medium text-blue-900 mb-2">Demo Passwords:</p>
               <div className="text-blue-700 space-y-1">
-                <p>Alice Johnson / alice123</p>
-                <p>Bob Smith / bob456</p>
-                <p>Carol Williams / carol789</p>
+                <p>alice123</p>
+                <p>bob456</p>
+                <p>carol789</p>
+                <p>david321</p>
+                <p>emma654</p>
+                <p>frank987</p>
+                <p>grace246</p>
+                <p>henry135</p>
               </div>
             </div>
           </div>
