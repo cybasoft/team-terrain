@@ -19,7 +19,7 @@ bun run build
 
 # Deploy to Cloudflare Pages
 echo "🌐 Deploying to Cloudflare Pages..."
-bunx wrangler pages deploy dist --project-name employees-map
+bunx wrangler pages deploy dist --project-name team-terrain
 
 echo "✅ Deployment complete!"
 echo "📝 Don't forget to set environment variables in Cloudflare Pages dashboard"

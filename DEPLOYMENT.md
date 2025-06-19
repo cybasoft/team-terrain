@@ -35,7 +35,7 @@
    VITE_USERS_ENDPOINT=
    VITE_LOGIN_ENDPOINT=
    VITE_API_AUTH_TOKEN=
-   VITE_APP_NAME=Employees Map
+   VITE_APP_NAME=TeamTerrain
    VITE_APP_VERSION=1.0.0
    VITE_DEFAULT_MAP_CENTER_LNG=36.8219
    VITE_DEFAULT_MAP_CENTER_LAT=-1.2921
@@ -68,7 +68,7 @@
    bun run build
    
    # Deploy to Cloudflare Pages
-   bunx wrangler pages deploy dist --project-name employees-map
+   bunx wrangler pages deploy dist --project-name team-terrain
    ```
 
 ## Post-Deployment Steps

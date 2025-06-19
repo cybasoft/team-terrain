@@ -1,4 +1,4 @@
 # Cloudflare Pages configuration
-name = "employees-map"
+name = "team-terrain"
 compatibility_date = "2024-03-01"
 pages_build_output_dir = "dist"

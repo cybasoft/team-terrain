@@ -34,7 +34,7 @@ jobs:
           VITE_LOCATION_TRACKER_ENDPOINT: ${{ vars.VITE_LOCATION_TRACKER_ENDPOINT }}
           VITE_USERS_ENDPOINT: ${{ vars.VITE_USERS_ENDPOINT }}
           VITE_LOGIN_ENDPOINT: ${{ vars.VITE_LOGIN_ENDPOINT }}
-          VITE_APP_NAME: "Employees Map"
+          VITE_APP_NAME: "TeamTerrain"
           VITE_APP_VERSION: "1.0.0"
           VITE_DEFAULT_MAP_CENTER_LNG: "36.8219"
           VITE_DEFAULT_MAP_CENTER_LAT: "-1.2921"
@@ -49,4 +49,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name employees-map
+          command: pages deploy dist --project-name team-terrain

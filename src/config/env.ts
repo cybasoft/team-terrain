@@ -2,7 +2,7 @@
 export const config = {
   // App Configuration
   app: {
-    name: import.meta.env.VITE_APP_NAME || 'Employees Map',
+    name: import.meta.env.VITE_APP_NAME || 'TeamTerrain',
     version: import.meta.env.VITE_APP_VERSION || '1.0.0',
     nodeEnv: import.meta.env.VITE_NODE_ENV || 'development',
     isDevelopment: import.meta.env.VITE_NODE_ENV === 'development',

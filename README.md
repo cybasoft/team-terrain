@@ -1,4 +1,4 @@
-# Employees Map
+# TeamTerrain
 
 This app allows you to create a geographical overview of user locations. These locations can be general or specific. This is manually updated and does not utilize any device locations.
 Admin can update everyone's location. Users can only update their own. 
@@ -28,7 +28,7 @@ npm run dev
 
 ### Optional Variables
 
-- `VITE_APP_NAME`: Application name (default: "Employees Map")
+- `VITE_APP_NAME`: Application name (default: "TeamTerrain")
 - `VITE_APP_VERSION`: Application version (default: "1.0.0")
 - `VITE_DEFAULT_MAP_CENTER_LNG`: Default map longitude (default: 36.8219 - Nairobi)
 - `VITE_DEFAULT_MAP_CENTER_LAT`: Default map latitude (default: -1.2921 - Nairobi)
