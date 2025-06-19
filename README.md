@@ -10,6 +10,7 @@ npm run dev
 
 ### Required Variables
 - `VITE_MAPBOX_ACCESS_TOKEN`: Your Mapbox access token (get one from [Mapbox](https://account.mapbox.com/access-tokens/))
+- `VITE_API_AUTH_TOKEN`: Authorization token for API requests (Bearer token) - **Required for authentication**
 
 ### Optional Variables
 - `VITE_APP_NAME`: Application name (default: "Employees Map")
@@ -23,8 +24,14 @@ npm run dev
 
 ### API Configuration
 - `VITE_API_BASE_URL`: Base URL for API endpoints
-- `VITE_API_AUTH_TOKEN`: Authorization token for API requests (Bearer token)
 - `VITE_LOCATION_TRACKER_ENDPOINT`: Location tracker endpoint path
 - `VITE_USERS_ENDPOINT`: Users endpoint path
 
-**Note:** The API authorization token is used for authenticating requests to your backend API endpoints. If not provided, requests will be made without authentication headers.
+## Authentication
+The application now uses **real API-based authentication**:
+- Users are fetched from the configured API endpoint
+- Passwords are validated against the API data
+- Sessions are persisted in localStorage for convenience
+- Fallback authentication is available if API is temporarily unavailable
+
+**Note:** The API authorization token is required for fetching user data and validating credentials.

@@ -13,7 +13,6 @@ export const useUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        console.log('Fetching users from API...');
         
         // Check if auth token is available
         if (!isAuthTokenAvailable()) {
@@ -28,7 +27,6 @@ export const useUsers = () => {
         const response = await authenticatedFetch(API_ENDPOINTS.USERS);
         if (response.ok) {
           const data = await response.json();
-          console.log('Users fetched from API:', data);
           setUsers(data.users || data);
         } else {
           console.error('Failed to fetch users from API', response.status, response.statusText);

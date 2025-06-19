@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { authenticateUser, validateUserPassword } from '../lib/authentication';
 
 interface LoginFormProps {
   users: UserType[];
@@ -27,18 +28,40 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
     setIsLoading(true);
     setError('');
 
-    // Simulate authentication delay
-    setTimeout(() => {
-      const user = users.find(u => u.password === password.trim());
-
-      if (user) {
-        console.log('Login successful for:', user.name);
-        onLogin(user);
+    try {
+      // Try API authentication first
+      const authResult = await authenticateUser({ password: password.trim() });
+      console.log('API authentication result:', authResult);
+      
+      if (authResult.success && authResult.user) {
+        console.log('API authentication successful for:', authResult.user.name);
+        onLogin(authResult.user);
       } else {
-        setError('Invalid password');
+        // Fallback to local validation if API fails
+        console.log('API authentication failed, trying local validation...');
+        const localUser = validateUserPassword(users, password.trim());
+        
+        if (localUser) {
+          console.log('Local authentication successful for:', localUser.name);
+          onLogin(localUser);
+        } else {
+          setError(authResult.message || 'Invalid password. Please check your credentials and try again.');
+        }
       }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      // Fallback to local validation on network error
+      const localUser = validateUserPassword(users, password.trim());
+      
+      if (localUser) {
+        console.log('Fallback authentication successful for:', localUser.name);
+        onLogin(localUser);
+      } else {
+        setError('Authentication failed. Please check your credentials and try again.');
+      }
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -48,7 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
           <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-blue-600" />
           </div>
-          <CardTitle>Nairobi Location Tracker</CardTitle>
+          <CardTitle>Employee Map</CardTitle>
           <CardDescription>
             Enter your password to access the map
           </CardDescription>
@@ -83,23 +106,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
               className="w-full"
               disabled={isLoading || !password.trim()}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? 'Authenticating...' : 'Sign In'}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <div className="text-sm">
-              <p className="font-medium text-blue-900 mb-2">Demo Passwords:</p>
-              <div className="text-blue-700 space-y-1">
-                <p>alice123</p>
-                <p>bob456</p>
-                <p>carol789</p>
-                <p>david321</p>
-                <p>emma654</p>
-                <p>frank987</p>
-                <p>grace246</p>
-                <p>henry135</p>
-              </div>
+              <p className="font-medium text-blue-900 mb-2">Authentication:</p>
+              <p className="text-blue-700">
+                Enter your assigned password to access the location tracker. 
+                Contact your administrator if you need access credentials.
+              </p>
             </div>
           </div>
         </CardContent>

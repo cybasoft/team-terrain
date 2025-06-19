@@ -56,7 +56,6 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
               ? { ...user, location: coordinates, pinned: true }
               : user
           );
-          console.log('Updated users state:', updatedUsers);
           return updatedUsers;
         });
         

@@ -14,7 +14,7 @@ import { useMapboxToken } from '../hooks/useMapboxToken';
 
 const Index = () => {
   const { users, setUsers, isLoadingUsers } = useUsers();
-  const { currentUser, handleLogin, handleLogout } = useAuth();
+  const { currentUser, isValidatingSession, handleLogin, handleLogout } = useAuth();
   const { mapboxToken, handleMapboxTokenSubmit } = useMapboxToken();
   const {
     sidebarOpen,
@@ -34,9 +34,9 @@ const Index = () => {
     resetInteractions();
   };
 
-  // Show loading screen while fetching users
-  if (isLoadingUsers) {
-    return <LoadingScreen message="Loading users..." />;
+  // Show loading screen while fetching users or validating session
+  if (isLoadingUsers || isValidatingSession) {
+    return <LoadingScreen message={isValidatingSession ? "Validating session..." : "Loading users..."} />;
   }
 
   // Show login form if no user is logged in

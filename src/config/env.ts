@@ -41,31 +41,19 @@ export const config = {
 export const validateEnvironment = () => {
   const requiredVars = [
     'VITE_MAPBOX_ACCESS_TOKEN',
-  ];
-
-  const optionalButRecommendedVars = [
-    'VITE_API_AUTH_TOKEN',
+    'VITE_API_AUTH_TOKEN', // Now required for authentication
   ];
 
   const missingRequired = requiredVars.filter(
-    (varName) => !import.meta.env[varName] || import.meta.env[varName] === 'your_mapbox_token_here'
-  );
-
-  const missingRecommended = optionalButRecommendedVars.filter(
-    (varName) => !import.meta.env[varName] || import.meta.env[varName] === 'your_api_auth_token_here'
+    (varName) => !import.meta.env[varName] || 
+    import.meta.env[varName] === 'your_mapbox_token_here' ||
+    import.meta.env[varName] === 'your_api_auth_token_here'
   );
 
   if (missingRequired.length > 0) {
     console.warn(
       `Missing required environment variables: ${missingRequired.join(', ')}\n` +
       'Please check your .env file and ensure all required variables are set.'
-    );
-  }
-
-  if (missingRecommended.length > 0) {
-    console.warn(
-      `Missing recommended environment variables: ${missingRecommended.join(', ')}\n` +
-      'These are optional but recommended for full functionality.'
     );
   }
 
