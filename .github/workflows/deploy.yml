@@ -39,7 +39,7 @@ jobs:
           VITE_DEFAULT_MAP_CENTER_LNG: "36.8219"
           VITE_DEFAULT_MAP_CENTER_LAT: "-1.2921"
           VITE_DEFAULT_MAP_ZOOM: "6"
-          VITE_MAP_STYLE: "mapbox://styles/mapbox/light-v11"
+          VITE_MAP_STYLE: "mapbox://styles/mapbox/streets-v12"
           VITE_DEBUG_MODE: "false"
           VITE_LOG_LEVEL: "error"
           VITE_ADMIN_EMAILS: ${{ vars.VITE_ADMIN_EMAILS }}

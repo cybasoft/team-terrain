@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MapComponent from '../components/MapComponent';
 import UserSidebar from '../components/UserSidebar';
@@ -11,11 +10,13 @@ import { useUsers } from '../hooks/useUsers';
 import { useAuth } from '../hooks/useAuth';
 import { useMapInteractions } from '../hooks/useMapInteractions';
 import { useMapboxToken } from '../hooks/useMapboxToken';
+import { useMapStyle } from '../hooks/useMapStyle';
 
 const Index = () => {
   const { users, setUsers, isLoadingUsers } = useUsers();
   const { currentUser, isValidatingSession, handleLogin, handleLogout } = useAuth();
   const { mapboxToken, handleMapboxTokenSubmit } = useMapboxToken();
+  const { mapStyle, setMapStyle } = useMapStyle();
   const {
     sidebarOpen,
     setSidebarOpen,
@@ -68,6 +69,8 @@ const Index = () => {
           currentUser={currentUser}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onLogout={handleLogoutWithReset}
+          currentMapStyle={mapStyle}
+          onMapStyleChange={setMapStyle}
         />
 
         <main className="flex-1 p-4">
@@ -80,6 +83,7 @@ const Index = () => {
             onUserDropOnMap={handleUserDropOnMap}
             hasAvailableUsers={hasAvailableUsers}
             mapboxToken={mapboxToken}
+            mapStyle={mapStyle}
           />
         </main>
       </div>

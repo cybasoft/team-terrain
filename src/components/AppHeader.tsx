@@ -5,14 +5,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../types/User';
 import { getUserPermissionLevel } from '../lib/permissions';
+import MapStyleSwitcher from './MapStyleSwitcher';
 
 interface AppHeaderProps {
   currentUser: User;
   onToggleSidebar: () => void;
   onLogout: () => void;
+  currentMapStyle?: string;
+  onMapStyleChange?: (style: string) => void;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ currentUser, onToggleSidebar, onLogout }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ 
+  currentUser, 
+  onToggleSidebar, 
+  onLogout,
+  currentMapStyle = 'mapbox://styles/mapbox/light-v11',
+  onMapStyleChange
+}) => {
   const permissionLevel = getUserPermissionLevel(currentUser);
   
   return (
@@ -48,10 +57,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({ currentUser, onToggleSidebar, onL
           </div>
           <div className="text-sm text-gray-500">
             {permissionLevel === 'admin' ? 
-              'Click map to pin any user • Drag any pin to move' : 
-              'Click map to pin your location • Drag your pin to move'
+              'Click map. Drag any pin to move' : 
+              'Click map to add • Drag pin to move'
             }
           </div>
+          {onMapStyleChange && currentMapStyle && (
+            <div className="mr-2 relative flex items-center">
+              <MapStyleSwitcher 
+                currentStyle={currentMapStyle} 
+                onStyleChange={onMapStyleChange} 
+              />
+              {currentMapStyle !== import.meta.env.VITE_MAP_STYLE && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+              )}
+            </div>
+          )}
           <Button
             variant="outline"
             size="sm"
