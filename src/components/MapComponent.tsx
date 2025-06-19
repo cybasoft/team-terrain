@@ -4,21 +4,30 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
 import { config } from '../config/env';
-import { canMovePinForUser } from '../lib/permissions';
+import { canMovePinForUser, isAdmin } from '../lib/permissions';
 
 interface MapComponentProps {
   users: User[];
   currentUser: User;
   onMapClick: (coordinates: [number, number]) => void;
   onPinDrag: (userId: string, coordinates: [number, number]) => void;
+  onUserDropOnMap?: (user: User, coordinates: [number, number]) => void;
   mapboxToken: string;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapClick, onPinDrag, mapboxToken }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ 
+  users, 
+  currentUser, 
+  onMapClick, 
+  onPinDrag, 
+  onUserDropOnMap,
+  mapboxToken 
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const [mapReady, setMapReady] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -168,9 +177,71 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapCl
 
   }, [users, currentUser, onPinDrag, mapReady]);
 
+  // Handle drag and drop events for dropping users onto the map
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isAdmin(currentUser) || !onUserDropOnMap) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!isAdmin(currentUser)) return;
+    
+    // Only set dragover to false if we're actually leaving the map container
+    if (!mapContainer.current?.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    if (!isAdmin(currentUser) || !onUserDropOnMap || !map.current) return;
+    
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    try {
+      // Get the dropped user data
+      const userData = e.dataTransfer.getData('application/json');
+      if (!userData) return;
+      
+      const droppedUser: User = JSON.parse(userData);
+      
+      // Convert screen coordinates to map coordinates
+      const rect = mapContainer.current!.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const lngLat = map.current.unproject([x, y]);
+      const coordinates: [number, number] = [lngLat.lng, lngLat.lat];
+      
+      // Call the callback to handle the user drop
+      onUserDropOnMap(droppedUser, coordinates);
+      
+    } catch (error) {
+      console.error('Error handling user drop:', error);
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="absolute inset-0 rounded-lg shadow-lg" />
+      <div 
+        ref={mapContainer} 
+        className={`absolute inset-0 rounded-lg shadow-lg transition-all duration-200 ${
+          isDragOver ? 'ring-2 ring-blue-500 ring-opacity-50 bg-blue-50 bg-opacity-30' : ''
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      />
+      {isDragOver && isAdmin(currentUser) && (
+        <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-lg flex items-center justify-center pointer-events-none z-10">
+          <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg font-medium">
+            📍 Drop here to pin user location
+          </div>
+        </div>
+      )}
       {!mapboxToken && (
         <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <div className="text-center p-8">

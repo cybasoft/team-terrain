@@ -192,6 +192,56 @@ export const useMapInteractions = (
     }
   };
 
+  const handleUserDropOnMap = async (user: User, coordinates: [number, number]) => {
+    // Check permissions - only admins can drag users to map
+    if (!canPinForUser(currentUser, user)) {
+      toast({
+        title: "Permission denied",
+        description: "You can only pin your own location or need admin permissions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: user.id,
+          name: user.name,
+          coordinates: formatCoordinates(coordinates), // Send as string
+          timestamp: new Date().toISOString(),
+          action: 'pin_location'
+        }),
+      });
+
+      if (response.ok) {
+        setUsers(prevUsers => {
+          const updatedUsers = prevUsers.map(u =>
+            u.id === user.id
+              ? { ...u, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
+              : u
+          );
+          return updatedUsers;
+        });
+        
+        toast({
+          title: "Location pinned successfully!",
+          description: `${user.name} has been added to the map via drag & drop`,
+        });
+      } else {
+        throw new Error('Failed to save to server');
+      }
+    } catch (error) {
+      console.error('Error saving location via drag & drop:', error);
+      toast({
+        title: "Error saving location",
+        description: "Failed to save location to server. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const resetInteractions = () => {
     setSidebarOpen(false);
     setSelectedUser(null);
@@ -210,6 +260,7 @@ export const useMapInteractions = (
     handleUserSelect,
     handlePinConfirm,
     handlePinDrag,
+    handleUserDropOnMap,
     resetInteractions
   };
 };

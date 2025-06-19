@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Search, Users, MapPin, X } from 'lucide-react';
+import { Search, Users, MapPin, X, Move } from 'lucide-react';
 import { User } from '../types/User';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { canPinForUser } from '../lib/permissions';
+import { canPinForUser, isAdmin } from '../lib/permissions';
 
 interface UserSidebarProps {
   users: User[];
@@ -17,12 +17,46 @@ interface UserSidebarProps {
 
 const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, onToggle, onUserSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [draggedUser, setDraggedUser] = useState<User | null>(null);
 
   // Filter to only users without locations that the current user can pin for
   const unpinnedUsers = users.filter(user => !user.location && canPinForUser(currentUser, user));
   const filteredUsers = unpinnedUsers.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const isCurrentUserAdmin = isAdmin(currentUser);
+
+  const handleDragStart = (e: React.DragEvent, user: User) => {
+    if (!isCurrentUserAdmin) return;
+    
+    setDraggedUser(user);
+    e.dataTransfer.setData('application/json', JSON.stringify(user));
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // Create a drag image
+    const dragImage = document.createElement('div');
+    dragImage.textContent = `📍 ${user.name}`;
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px';
+    dragImage.style.background = 'rgba(59, 130, 246, 0.9)';
+    dragImage.style.color = 'white';
+    dragImage.style.padding = '8px 12px';
+    dragImage.style.borderRadius = '6px';
+    dragImage.style.fontSize = '14px';
+    dragImage.style.fontWeight = '500';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 20, 20);
+    
+    // Clean up drag image after a delay
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedUser(null);
+  };
 
   return (
     <>
@@ -89,8 +123,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
                 filteredUsers.map(user => (
                   <Card
                     key={user.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-blue-300"
-                    onClick={() => onUserSelect(user)}
+                    className={`cursor-pointer hover:shadow-md transition-all duration-200 hover:border-blue-300 ${
+                      isCurrentUserAdmin ? 'select-none' : ''
+                    } ${draggedUser?.id === user.id ? 'opacity-50 scale-95' : ''}`}
+                    onClick={() => !draggedUser && onUserSelect(user)}
+                    draggable={isCurrentUserAdmin}
+                    onDragStart={(e) => handleDragStart(e, user)}
+                    onDragEnd={handleDragEnd}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
@@ -101,9 +140,15 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
                         </div>
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">{user.name}</h3>
-                          <p className="text-sm text-gray-500">Click to pin location</p>
+                          <p className="text-sm text-gray-500">
+                            {isCurrentUserAdmin ? 'Drag to map or click to pin' : 'Click to pin location'}
+                          </p>
                         </div>
-                        <MapPin className="h-4 w-4 text-gray-400" />
+                        {isCurrentUserAdmin ? (
+                          <Move className="h-4 w-4 text-blue-500" />
+                        ) : (
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                        )}
                       </div>
                     </CardContent>
                   </Card>
