@@ -1,174 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
-import { Menu, LogOut } from 'lucide-react';
+import React from 'react';
 import MapComponent from '../components/MapComponent';
 import UserSidebar from '../components/UserSidebar';
 import PinLocationDialog from '../components/PinLocationDialog';
 import MapboxTokenInput from '../components/MapboxTokenInput';
 import LoginForm from '../components/LoginForm';
-import { User } from '../types/User';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-
-const API_ENDPOINT = 'https://n8.cybasoft.com/webhook-test/fa854d30-aefc-4f26-b3d7-e38a1551e448';
-const USERS_API_ENDPOINT = 'https://n8.cybasoft.com/webhook-test/c853c89e-8a9f-49ee-84e6-586c1552c42f';
+import LoadingScreen from '../components/LoadingScreen';
+import AppHeader from '../components/AppHeader';
+import { useUsers } from '../hooks/useUsers';
+import { useAuth } from '../hooks/useAuth';
+import { useMapInteractions } from '../hooks/useMapInteractions';
+import { useMapboxToken } from '../hooks/useMapboxToken';
 
 const Index = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [pendingCoordinates, setPendingCoordinates] = useState<[number, number] | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
-  const { toast } = useToast();
+  const { users, setUsers, isLoadingUsers } = useUsers();
+  const { currentUser, handleLogin, handleLogout } = useAuth();
+  const { mapboxToken, handleMapboxTokenSubmit } = useMapboxToken();
+  const {
+    sidebarOpen,
+    setSidebarOpen,
+    selectedUser,
+    pendingCoordinates,
+    dialogOpen,
+    setDialogOpen,
+    handleMapClick,
+    handleUserSelect,
+    handlePinConfirm,
+    resetInteractions
+  } = useMapInteractions(users, setUsers);
 
-  // Load token from localStorage on mount
-  useEffect(() => {
-    const savedToken = localStorage.getItem('mapbox-token');
-    if (savedToken) {
-      setMapboxToken(savedToken);
-    }
-  }, []);
-
-  // Fetch users from API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        console.log('Fetching users from API...');
-        const response = await fetch(USERS_API_ENDPOINT);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Users fetched from API:', data);
-          // Assuming the API returns users in the format we expect
-          setUsers(data.users || data);
-        } else {
-          console.error('Failed to fetch users from API');
-          toast({
-            title: "Error loading users",
-            description: "Failed to load users from server. Please try again.",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast({
-          title: "Error loading users",
-          description: "Failed to load users from server. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoadingUsers(false);
-      }
-    };
-
-    fetchUsers();
-  }, [toast]);
-
-  const handleLogin = (user: User) => {
-    console.log('User logged in:', user.name);
-    setCurrentUser(user);
-  };
-
-  const handleLogout = () => {
-    console.log('User logged out');
-    setCurrentUser(null);
-    setSidebarOpen(false);
-    setSelectedUser(null);
-    setPendingCoordinates(null);
-    setDialogOpen(false);
-  };
-
-  const handleMapboxTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-    localStorage.setItem('mapbox-token', token);
-  };
-
-  const handleMapClick = (coordinates: [number, number]) => {
-    if (users.filter(u => !u.pinned).length === 0) {
-      toast({
-        title: "No users available",
-        description: "All users have already been pinned to locations.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setPendingCoordinates(coordinates);
-    setSidebarOpen(true);
-  };
-
-  const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
-    setDialogOpen(true);
-    setSidebarOpen(false);
-  };
-
-  const handlePinConfirm = async (userId: string, password: string, coordinates: [number, number]) => {
-    console.log('Attempting to pin user:', userId, 'at coordinates:', coordinates);
-    
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-
-    try {
-      // Send data to REST API
-      const response = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          name: user.name,
-          coordinates: coordinates,
-          timestamp: new Date().toISOString(),
-          action: 'pin_location'
-        }),
-      });
-
-      if (response.ok) {
-        // Update local state only after successful API call
-        setUsers(prevUsers => {
-          const updatedUsers = prevUsers.map(user =>
-            user.id === userId
-              ? { ...user, location: coordinates, pinned: true }
-              : user
-          );
-          console.log('Updated users state:', updatedUsers);
-          return updatedUsers;
-        });
-        
-        toast({
-          title: "Location pinned successfully!",
-          description: `${selectedUser?.name} has been pinned to the map and saved to the server.`,
-        });
-      } else {
-        throw new Error('Failed to save to server');
-      }
-    } catch (error) {
-      console.error('Error saving location:', error);
-      toast({
-        title: "Error saving location",
-        description: "Failed to save location to server. Please try again.",
-        variant: "destructive"
-      });
-      return; // Don't update local state if API call failed
-    }
-    
-    setPendingCoordinates(null);
-    setSelectedUser(null);
+  const handleLogoutWithReset = () => {
+    handleLogout();
+    resetInteractions();
   };
 
   // Show loading screen while fetching users
   if (isLoadingUsers) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading users...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading users..." />;
   }
 
   // Show login form if no user is logged in
@@ -191,41 +59,12 @@ const Index = () => {
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-800">
-                Nairobi Location Tracker
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {currentUser.name}</span>
-              <div className="text-sm text-gray-500">
-                Click on the map to pin a user location
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center space-x-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </Button>
-            </div>
-          </div>
-        </header>
+        <AppHeader
+          currentUser={currentUser}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onLogout={handleLogoutWithReset}
+        />
 
-        {/* Map */}
         <main className="flex-1 p-4">
           <MapComponent
             users={users}
