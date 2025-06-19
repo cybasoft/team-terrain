@@ -159,18 +159,21 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
 
   return (
     <TooltipProvider>
-      <div className={`relative ${className}`}>
+      <div className={`relative max-w-full ${className}`}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
           <Input
             ref={inputRef}
             type="text"
-            placeholder={hasAvailableUsers ? "Search for a location..." : "Search for a location (no users available to pin)"}
+            placeholder={hasAvailableUsers ? 
+              "Search for a location..." : 
+              "No users to pin"
+            }
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={!hasAvailableUsers}
-            className={`pl-10 pr-24 shadow-lg border-gray-200 ${
+            className={`pl-10 pr-16 sm:pr-24 shadow-lg border-gray-200 text-sm ${
               !hasAvailableUsers ? 'bg-gray-50 text-gray-500' : 'bg-white'
             }`}
             onFocus={() => results.length > 0 && setShowResults(true)}
@@ -218,7 +221,7 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
       {showResults && results.length > 0 && (
         <Card 
           ref={resultsRef}
-          className="absolute top-full left-0 right-0 mt-1 z-50 max-h-80 overflow-y-auto shadow-xl border-gray-200"
+          className="absolute top-full left-0 right-0 mt-1 z-30 max-h-80 overflow-y-auto shadow-xl border-gray-200"
         >
           <CardContent className="p-0">
             {results.map((result, index) => {
@@ -273,7 +276,7 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
 
       {/* No Results Message */}
       {showResults && !isLoading && query && results.length === 0 && (
-        <Card className="absolute top-full left-0 right-0 mt-1 z-50 shadow-xl border-gray-200">
+        <Card className="absolute top-full left-0 right-0 mt-1 z-30 shadow-xl border-gray-200">
           <CardContent className="p-4 text-center text-gray-500">
             <MapPin className="h-6 w-6 mx-auto mb-2 text-gray-300" />
             <div className="text-sm">No locations found</div>

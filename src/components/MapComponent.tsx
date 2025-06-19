@@ -80,8 +80,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       zoom: config.mapbox.defaultZoom,
     });
 
+    // Add navigation controls in a position that doesn't conflict with search
+    // Use more compact navigation control to save space
     map.current.addControl(
-      new mapboxgl.NavigationControl(),
+      new mapboxgl.NavigationControl({
+        showCompass: false,
+        visualizePitch: false
+      }),
       'top-right'
     );
 
@@ -406,14 +411,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      {/* Search Control */}
-      <div className="absolute top-4 left-4 right-4 z-20">
+      {/* Search Control - positioned to leave space for navigation controls */}
+      <div className="absolute top-4 left-4 right-14 md:right-16 z-10">
         <MapSearchControl
           mapboxToken={mapboxToken}
           onLocationSelect={handleLocationSearch}
           currentUser={currentUser}
           hasAvailableUsers={hasAvailableUsers?.() ?? true}
-          className="max-w-md"
+          className="w-full"
         />
       </div>
 
