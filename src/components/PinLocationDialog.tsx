@@ -1,18 +1,16 @@
 
 import React, { useState } from 'react';
-import { MapPin, Lock, AlertCircle } from 'lucide-react';
+import { MapPin, AlertCircle } from 'lucide-react';
 import { User } from '../types/User';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 
 interface PinLocationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
   coordinates: [number, number] | null;
-  onConfirm: (userId: string, password: string, coordinates: [number, number]) => void;
+  onConfirm: (userId: string, coordinates: [number, number]) => void;
 }
 
 const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
@@ -22,8 +20,6 @@ const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
   coordinates,
   onConfirm
 }) => {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,23 +27,12 @@ const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
     if (!user || !coordinates) return;
 
     setIsLoading(true);
-    setError('');
-
-    // Verify password matches the user's password
-    if (password === user.password) {
-      onConfirm(user.id, password, coordinates);
-      setPassword('');
-      setError('');
-      onClose();
-    } else {
-      setError('Incorrect password. Please try again.');
-    }
+    onConfirm(user.id, coordinates);
+    onClose();
     setIsLoading(false);
   };
 
   const handleClose = () => {
-    setPassword('');
-    setError('');
     onClose();
   };
 
@@ -73,26 +58,13 @@ const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password" className="flex items-center space-x-2">
-              <Lock className="h-4 w-4" />
-              <span>Password</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              className={error ? 'border-red-300' : ''}
-            />
-            {error && (
-              <div className="flex items-center space-x-2 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                <span>{error}</span>
-              </div>
-            )}
+          <div className="text-center py-4">
+            <p className="text-gray-600 mb-2">
+              Are you sure you want to pin this location?
+            </p>
+            <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded">
+              This will set <strong>{user?.name}</strong>'s location on the map.
+            </div>
           </div>
 
           <div className="flex space-x-2 pt-4">
@@ -108,9 +80,9 @@ const PinLocationDialog: React.FC<PinLocationDialogProps> = ({
             <Button
               type="submit"
               className="flex-1"
-              disabled={isLoading || !password}
+              disabled={isLoading}
             >
-              {isLoading ? 'Confirming...' : 'Pin Location'}
+              {isLoading ? 'Pinning...' : 'Pin Location'}
             </Button>
           </div>
         </form>

@@ -35,7 +35,7 @@ export const useMapInteractions = (
       } else {
         toast({
           title: "Permission denied",
-          description: "You can only pin your own location. Contact an admin to pin other users.",
+          description: "No available users to add to map",
           variant: "destructive"
         });
       }
@@ -70,7 +70,7 @@ export const useMapInteractions = (
     setSidebarOpen(false);
   };
 
-  const handlePinConfirm = async (userId: string, password: string, coordinates: [number, number]) => {
+  const handlePinConfirm = async (userId: string, coordinates: [number, number]) => {
     console.log('Attempting to pin user:', userId, 'at coordinates:', coordinates);
     
     const user = users.find(u => u.id === userId);
@@ -110,7 +110,7 @@ export const useMapInteractions = (
         
         toast({
           title: "Location pinned successfully!",
-          description: `${selectedUser?.name} has been pinned to the map and saved to the server.`,
+          description: `${selectedUser?.name} has been added to the map`,
         });
       } else {
         throw new Error('Failed to save to server');
