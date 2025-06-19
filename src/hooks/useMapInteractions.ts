@@ -4,6 +4,7 @@ import { User } from '../types/User';
 import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
 import { authenticatedFetch } from '../lib/auth';
+import { formatCoordinates } from '../lib/coordinates';
 
 export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React.SetStateAction<User[]>>) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,7 +45,7 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
         body: JSON.stringify({
           userId: userId,
           name: user.name,
-          coordinates: coordinates,
+          coordinates: formatCoordinates(coordinates), // Send as string
           timestamp: new Date().toISOString(),
           action: 'pin_location'
         }),
@@ -54,7 +55,7 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
         setUsers(prevUsers => {
           const updatedUsers = prevUsers.map(user =>
             user.id === userId
-              ? { ...user, location: coordinates, pinned: true }
+              ? { ...user, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
               : user
           );
           return updatedUsers;
@@ -94,7 +95,7 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
         body: JSON.stringify({
           userId: userId,
           name: user.name,
-          coordinates: coordinates,
+          coordinates: formatCoordinates(coordinates), // Send as string
           timestamp: new Date().toISOString(),
           action: 'update_location'
         }),
@@ -104,7 +105,7 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
         setUsers(prevUsers => {
           const updatedUsers = prevUsers.map(u =>
             u.id === userId
-              ? { ...u, location: coordinates, pinned: true }
+              ? { ...u, coordinates: formatCoordinates(coordinates), location: coordinates, pinned: true }
               : u
           );
           return updatedUsers;

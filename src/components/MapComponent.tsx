@@ -16,6 +16,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -42,20 +43,37 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
       }
     });
 
+    // Ensure map is fully loaded before allowing marker operations
+    map.current.on('load', () => {
+      console.log('Map fully loaded and ready for markers');
+      setMapReady(true);
+    });
+
     return () => {
       map.current?.remove();
+      setMapReady(false);
     };
   }, [mapboxToken, onMapClick]);
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapReady) {
+      console.log('Map not ready yet, skipping marker update. Map:', !!map.current, 'Ready:', mapReady);
+      return;
+    }
+
+    console.log('MapComponent: Processing users for markers:', users);
 
     // Clear existing markers
     markers.current.forEach(marker => marker.remove());
     markers.current.clear();
 
     // Add markers for users with locations (regardless of pinned status)
-    users.filter(user => user.location && user.location.length === 2).forEach(user => {
+    const usersWithLocations = users.filter(user => user.location && user.location.length === 2);
+    console.log('Users with valid locations:', usersWithLocations);
+
+    usersWithLocations.forEach(user => {
+      console.log(`Adding marker for ${user.name} at:`, user.location);
+      
       const markerElement = document.createElement('div');
       markerElement.className = 'marker-custom';
       markerElement.style.width = '20px';
@@ -95,7 +113,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
 
       markers.current.set(user.id, marker);
     });
-  }, [users, onPinDrag]);
+
+    console.log(`Added ${markers.current.size} markers to map`);
+  }, [users, onPinDrag, mapReady]);
 
   return (
     <div className="relative w-full h-full">
