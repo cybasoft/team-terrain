@@ -9,11 +9,10 @@ import { Label } from '@/components/ui/label';
 import { authenticateUser, validateUserCredentials } from '../lib/authentication';
 
 interface LoginFormProps {
-  users: UserType[];
   onLogin: (user: UserType) => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,7 +33,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
     setError('');
 
     try {
-      // Try API authentication first
+      // Try API authentication - no local fallback (removes dependency on users array)
       const authResult = await authenticateUser({ 
         email: email.trim(), 
         password: password.trim() 
@@ -43,25 +42,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
       if (authResult.success && authResult.user) {
         onLogin(authResult.user);
       } else {
-        // Fallback to local validation if API fails
-        const localUser = validateUserCredentials(users, email.trim(), password.trim());
-        
-        if (localUser) {
-          onLogin(localUser);
-        } else {
-          setError(authResult.message || 'Invalid email or password. Please check your credentials and try again.');
-        }
+        setError(authResult.message || 'Invalid email or password. Please check your credentials and try again.');
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      // Fallback to local validation on network error
-      const localUser = validateUserCredentials(users, email.trim(), password.trim());
-      
-      if (localUser) {
-        onLogin(localUser);
-      } else {
-        setError('Authentication failed. Please check your credentials and try again.');
-      }
+      setError('Authentication failed. Please check your credentials or try again later.');
     } finally {
       setIsLoading(false);
     }

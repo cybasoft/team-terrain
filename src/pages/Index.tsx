@@ -13,8 +13,8 @@ import { useMapboxToken } from '../hooks/useMapboxToken';
 import { useMapStyle } from '../hooks/useMapStyle';
 
 const Index = () => {
-  const { users, setUsers, isLoadingUsers } = useUsers();
   const { currentUser, isValidatingSession, handleLogin, handleLogout } = useAuth();
+  const { users, setUsers, isLoadingUsers } = useUsers(currentUser);
   const { mapboxToken, handleMapboxTokenSubmit } = useMapboxToken();
   const { mapStyle, setMapStyle } = useMapStyle();
   const {
@@ -46,7 +46,7 @@ const Index = () => {
 
   // Show login form if no user is logged in
   if (!currentUser) {
-    return <LoginForm users={users} onLogin={handleLogin} />;
+    return <LoginForm onLogin={handleLogin} />;
   }
 
   // Show token input if no mapbox token

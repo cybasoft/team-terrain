@@ -31,6 +31,22 @@ export const authenticatedFetch = async (
   return fetch(url, requestOptions);
 };
 
+// Utility function for making unauthenticated API requests
+export const unauthenticatedFetch = async (
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  const requestOptions: RequestInit = {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  };
+
+  return fetch(url, requestOptions);
+};
+
 // Helper function to check if authentication token is available
 export const isAuthTokenAvailable = (): boolean => {
   return !!config.api.authToken && config.api.authToken !== 'your_api_auth_token_here';

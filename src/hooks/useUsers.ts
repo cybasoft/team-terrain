@@ -19,15 +19,21 @@ interface RawUserData {
   country?: string;
 }
 
-export const useUsers = () => {
+export const useUsers = (currentUser?: User | null) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false); // Start as false to avoid initial loading
   const { toast } = useToast();
 
   useEffect(() => {
+    // Only fetch users if we have a currentUser (authenticated)
+    if (!currentUser) {
+      return;
+    }
+    
+    setIsLoadingUsers(true);
+    
     const fetchUsers = async () => {
       try {
-        
         // Check if auth token is available
         if (!isAuthTokenAvailable()) {
           console.warn('API authorization token not configured');
@@ -105,7 +111,7 @@ export const useUsers = () => {
     };
 
     fetchUsers();
-  }, [toast]);
+  }, [toast, currentUser]);
 
   return { users, setUsers, isLoadingUsers };
 };
