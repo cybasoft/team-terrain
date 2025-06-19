@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from '../constants/api';
 import { authenticatedFetch } from './auth';
 
 export interface LoginCredentials {
-  username?: string;
+  email: string;
   password: string;
 }
 
@@ -15,12 +15,12 @@ export interface AuthResponse {
 
 /**
  * Authenticate user with the backend API
- * @param credentials - Login credentials (username optional, password required)
+ * @param credentials - Login credentials (email and password required)
  * @returns Promise with authentication result
  */
 export const authenticateUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    console.log('Attempting to authenticate user...');
+    console.log('Attempting to authenticate user with email:', credentials.email);
     
     // First, fetch all users from the API
     const usersResponse = await authenticatedFetch(API_ENDPOINTS.USERS);
@@ -34,9 +34,10 @@ export const authenticateUser = async (credentials: LoginCredentials): Promise<A
     
     console.log('Fetched users for authentication:', users.length);
     
-    // Find user by password (current simple authentication)
+    // Find user by email and password
     // In a real system, you'd send credentials to a login endpoint
     const authenticatedUser = users.find(user => 
+      user.email === credentials.email.trim() && 
       user.password === credentials.password.trim()
     );
     
@@ -47,10 +48,10 @@ export const authenticateUser = async (credentials: LoginCredentials): Promise<A
         user: authenticatedUser
       };
     } else {
-      console.log('Authentication failed: Invalid password');
+      console.log('Authentication failed: Invalid email or password');
       return {
         success: false,
-        message: 'Invalid password. Please check your credentials and try again.'
+        message: 'Invalid email or password. Please check your credentials and try again.'
       };
     }
     
@@ -64,11 +65,23 @@ export const authenticateUser = async (credentials: LoginCredentials): Promise<A
 };
 
 /**
- * Validate user password against stored user data
+ * Validate user credentials against stored user data
  * This is a fallback method for when API authentication is not available
  * @param users - Array of users to validate against
+ * @param email - Email to validate
  * @param password - Password to validate
  * @returns Authenticated user or null
+ */
+export const validateUserCredentials = (users: User[], email: string, password: string): User | null => {
+  return users.find(user => 
+    user.email === email.trim() && 
+    user.password === password.trim()
+  ) || null;
+};
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use validateUserCredentials instead
  */
 export const validateUserPassword = (users: User[], password: string): User | null => {
   return users.find(user => user.password === password.trim()) || null;

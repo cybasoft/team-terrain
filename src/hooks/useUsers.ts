@@ -10,7 +10,7 @@ import { parseCoordinates } from '../lib/coordinates';
 interface RawUserData {
   id: string;
   name: string;
-  email?: string;
+  email: string;
   password: string;
   coordinates?: string;
   location?: [number, number] | string | null;
@@ -52,9 +52,15 @@ export const useUsers = () => {
           const processedUsers = fetchedUsers.map((user: RawUserData): User => {
             console.log(`Processing user: ${user.name}`, {
               id: user.id,
+              email: user.email,
               coordinates: user.coordinates,
               location: user.location
             });
+            
+            // Ensure user has required email field
+            if (!user.email) {
+              console.warn(`User ${user.name} missing email address`);
+            }
             
             // Try to parse coordinates from both 'coordinates' and 'location' fields
             const parsedLocation = parseCoordinates(user.coordinates) || parseCoordinates(user.location);
@@ -63,6 +69,7 @@ export const useUsers = () => {
             
             return {
               ...user,
+              email: user.email || '', // Ensure email is not undefined
               coordinates: user.coordinates, // Keep original string
               location: parsedLocation, // Parsed array
               pinned: parsedLocation !== null

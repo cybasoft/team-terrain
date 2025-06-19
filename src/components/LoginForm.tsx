@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Lock, AlertCircle } from 'lucide-react';
+import { Lock, AlertCircle, Mail } from 'lucide-react';
 import { User as UserType } from '../types/User';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { authenticateUser, validateUserPassword } from '../lib/authentication';
+import { authenticateUser, validateUserCredentials } from '../lib/authentication';
 
 interface LoginFormProps {
   users: UserType[];
@@ -14,14 +14,19 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
     if (!password.trim()) {
-      setError('Please enter a password');
+      setError('Please enter your password');
       return;
     }
 
@@ -30,7 +35,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
 
     try {
       // Try API authentication first
-      const authResult = await authenticateUser({ password: password.trim() });
+      const authResult = await authenticateUser({ 
+        email: email.trim(), 
+        password: password.trim() 
+      });
       console.log('API authentication result:', authResult);
       
       if (authResult.success && authResult.user) {
@@ -39,19 +47,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
       } else {
         // Fallback to local validation if API fails
         console.log('API authentication failed, trying local validation...');
-        const localUser = validateUserPassword(users, password.trim());
+        const localUser = validateUserCredentials(users, email.trim(), password.trim());
         
         if (localUser) {
           console.log('Local authentication successful for:', localUser.name);
           onLogin(localUser);
         } else {
-          setError(authResult.message || 'Invalid password. Please check your credentials and try again.');
+          setError(authResult.message || 'Invalid email or password. Please check your credentials and try again.');
         }
       }
     } catch (error) {
       console.error('Authentication error:', error);
       // Fallback to local validation on network error
-      const localUser = validateUserPassword(users, password.trim());
+      const localUser = validateUserCredentials(users, email.trim(), password.trim());
       
       if (localUser) {
         console.log('Fallback authentication successful for:', localUser.name);
@@ -73,11 +81,27 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
           </div>
           <CardTitle>Employee Map</CardTitle>
           <CardDescription>
-            Enter your password to access the map
+            Enter your email and password to access the map
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="flex items-center space-x-2">
+                <Mail className="h-4 w-4" />
+                <span>Email</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className={error ? 'border-red-300' : ''}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center space-x-2">
                 <Lock className="h-4 w-4" />
@@ -104,7 +128,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !password.trim()}
+              disabled={isLoading || !email.trim() || !password.trim()}
             >
               {isLoading ? 'Authenticating...' : 'Sign In'}
             </Button>
@@ -114,7 +138,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ users, onLogin }) => {
             <div className="text-sm">
               <p className="font-medium text-blue-900 mb-2">Authentication:</p>
               <p className="text-blue-700">
-                Enter your assigned password to access the location tracker. 
+                Enter your email and assigned password to access the location tracker. 
                 Contact your administrator if you need access credentials.
               </p>
             </div>

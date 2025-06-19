@@ -103,7 +103,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
               <div class="p-2">
                 <div class="font-semibold text-sm text-gray-900">${user.name}</div>
                 <div class="text-xs text-gray-600 mt-1">${user.pinned ? 'Pinned Location' : 'Located'}</div>
-                ${user.email ? `<div class="text-xs text-gray-500 mt-1">${user.email}</div>` : ''}
+                <div class="text-xs text-gray-500 mt-1">${user.email}</div>
                 <div class="text-xs text-blue-600 mt-2">
                   ${user.location![0].toFixed(6)}, ${user.location![1].toFixed(6)}
                 </div>
