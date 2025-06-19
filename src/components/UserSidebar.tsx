@@ -37,16 +37,18 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
     // Create a drag image
     const dragImage = document.createElement('div');
     dragImage.textContent = `📍 ${user.name}`;
+    dragImage.className = 'drag-preview';
     dragImage.style.position = 'absolute';
     dragImage.style.top = '-1000px';
-    dragImage.style.background = 'rgba(59, 130, 246, 0.9)';
+    dragImage.style.background = 'linear-gradient(135deg, #3B82F6, #1D4ED8)';
     dragImage.style.color = 'white';
     dragImage.style.padding = '8px 12px';
     dragImage.style.borderRadius = '6px';
     dragImage.style.fontSize = '14px';
     dragImage.style.fontWeight = '500';
+    dragImage.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
     document.body.appendChild(dragImage);
-    e.dataTransfer.setDragImage(dragImage, 20, 20);
+    e.dataTransfer.setDragImage(dragImage, 60, 20);
     
     // Clean up drag image after a delay
     setTimeout(() => {
@@ -125,7 +127,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
                     key={user.id}
                     className={`cursor-pointer hover:shadow-md transition-all duration-200 hover:border-blue-300 ${
                       isCurrentUserAdmin ? 'select-none' : ''
-                    } ${draggedUser?.id === user.id ? 'opacity-50 scale-95' : ''}`}
+                    } ${draggedUser?.id === user.id ? 'opacity-50 scale-95 dragging-user-card' : ''}`}
                     onClick={() => !draggedUser && onUserSelect(user)}
                     draggable={isCurrentUserAdmin}
                     onDragStart={(e) => handleDragStart(e, user)}

@@ -236,9 +236,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
         onDrop={handleDrop}
       />
       {isDragOver && isAdmin(currentUser) && (
-        <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-lg flex items-center justify-center pointer-events-none z-10">
-          <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg font-medium">
-            📍 Drop here to pin user location
+        <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-lg flex items-center justify-center pointer-events-none z-10 map-drag-overlay">
+          <div className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl font-medium border-2 border-blue-400">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl">📍</span>
+              <span>Drop here to pin user location</span>
+            </div>
           </div>
         </div>
       )}
