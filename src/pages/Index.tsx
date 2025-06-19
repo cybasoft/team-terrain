@@ -28,7 +28,7 @@ const Index = () => {
     handlePinConfirm,
     handlePinDrag,
     resetInteractions
-  } = useMapInteractions(users, setUsers);
+  } = useMapInteractions(users, setUsers, currentUser);
 
   const handleLogoutWithReset = () => {
     handleLogout();
@@ -54,6 +54,7 @@ const Index = () => {
     <div className="h-screen flex overflow-hidden bg-gray-100">
       <UserSidebar
         users={users}
+        currentUser={currentUser}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onUserSelect={handleUserSelect}
@@ -69,6 +70,7 @@ const Index = () => {
         <main className="flex-1 p-4">
           <MapComponent
             users={users}
+            currentUser={currentUser}
             onMapClick={handleMapClick}
             onPinDrag={handlePinDrag}
             mapboxToken={mapboxToken}

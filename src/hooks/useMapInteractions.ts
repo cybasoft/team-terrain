@@ -5,8 +5,13 @@ import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
 import { authenticatedFetch } from '../lib/auth';
 import { formatCoordinates } from '../lib/coordinates';
+import { canMovePinForUser, canPinForUser } from '../lib/permissions';
 
-export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React.SetStateAction<User[]>>) => {
+export const useMapInteractions = (
+  users: User[], 
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>, 
+  currentUser: User
+) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [pendingCoordinates, setPendingCoordinates] = useState<[number, number] | null>(null);
@@ -14,20 +19,52 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
   const { toast } = useToast();
 
   const handleMapClick = (coordinates: [number, number]) => {
-    // Only allow pinning if there are users without locations
-    if (users.filter(u => !u.location).length === 0) {
+    // Check if there are any users the current user can pin for
+    const availableUsers = users.filter(u => !u.location && canPinForUser(currentUser, u));
+    
+    if (availableUsers.length === 0) {
+      // Check if it's because all users have locations or permission issue
+      const totalUnpinnedUsers = users.filter(u => !u.location);
+      
+      if (totalUnpinnedUsers.length === 0) {
+        toast({
+          title: "No users available",
+          description: "All users already have locations assigned.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Permission denied",
+          description: "You can only pin your own location. Contact an admin to pin other users.",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
+    
+    // If there's only one user they can pin (typically themselves), open dialog directly
+    if (availableUsers.length === 1) {
+      setSelectedUser(availableUsers[0]);
+      setPendingCoordinates(coordinates);
+      setDialogOpen(true);
+    } else {
+      // Multiple users available (admin case), show sidebar to select
+      setPendingCoordinates(coordinates);
+      setSidebarOpen(true);
+    }
+  };
+
+  const handleUserSelect = (user: User) => {
+    // Double-check permissions before allowing selection
+    if (!canPinForUser(currentUser, user)) {
       toast({
-        title: "No users available",
-        description: "All users already have locations assigned.",
+        title: "Permission denied",
+        description: "You can only pin your own location.",
         variant: "destructive"
       });
       return;
     }
-    setPendingCoordinates(coordinates);
-    setSidebarOpen(true);
-  };
-
-  const handleUserSelect = (user: User) => {
+    
     setSelectedUser(user);
     setDialogOpen(true);
     setSidebarOpen(false);
@@ -38,6 +75,16 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
     
     const user = users.find(u => u.id === userId);
     if (!user) return;
+
+    // Final permission check before pinning
+    if (!canPinForUser(currentUser, user)) {
+      toast({
+        title: "Permission denied",
+        description: "You can only pin your own location.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
@@ -88,6 +135,18 @@ export const useMapInteractions = (users: User[], setUsers: React.Dispatch<React
     
     const user = users.find(u => u.id === userId);
     if (!user) return;
+
+    // Check permissions before allowing drag
+    if (!canMovePinForUser(currentUser, user)) {
+      toast({
+        title: "Permission denied",
+        description: "You can only move your own pin or you need admin permissions.",
+        variant: "destructive"
+      });
+      // Force re-render to revert marker position
+      setUsers(prevUsers => [...prevUsers]);
+      return;
+    }
 
     try {
       const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {

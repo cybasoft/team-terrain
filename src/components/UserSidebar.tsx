@@ -5,18 +5,21 @@ import { User } from '../types/User';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { canPinForUser } from '../lib/permissions';
 
 interface UserSidebarProps {
   users: User[];
+  currentUser: User;
   isOpen: boolean;
   onToggle: () => void;
   onUserSelect: (user: User) => void;
 }
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ users, isOpen, onToggle, onUserSelect }) => {
+const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, onToggle, onUserSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const unpinnedUsers = users.filter(user => !user.location);
+  // Filter to only users without locations that the current user can pin for
+  const unpinnedUsers = users.filter(user => !user.location && canPinForUser(currentUser, user));
   const filteredUsers = unpinnedUsers.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -74,8 +77,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, isOpen, onToggle, onUs
                 <div className="text-center py-8">
                   <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">
-                    {searchTerm ? 'No users found' : 'All users have locations!'}
+                    {searchTerm ? 'No users found' : 'No users available to pin!'}
                   </p>
+                  {!searchTerm && unpinnedUsers.length === 0 && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      You can only pin your own location{!canPinForUser(currentUser, currentUser) ? '' : ', or all users already have locations.'}
+                    </p>
+                  )}
                 </div>
               ) : (
                 filteredUsers.map(user => (

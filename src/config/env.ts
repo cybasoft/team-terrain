@@ -35,6 +35,11 @@ export const config = {
     enabled: import.meta.env.VITE_DEBUG_MODE === 'true',
     logLevel: import.meta.env.VITE_LOG_LEVEL || 'info',
   },
+
+  // Permissions Configuration
+  permissions: {
+    adminEmails: (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(email => email.trim()).filter(Boolean),
+  },
 } as const;
 
 // Helper function to validate required environment variables

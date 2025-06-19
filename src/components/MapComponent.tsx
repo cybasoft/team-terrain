@@ -4,15 +4,17 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
 import { config } from '../config/env';
+import { canMovePinForUser } from '../lib/permissions';
 
 interface MapComponentProps {
   users: User[];
+  currentUser: User;
   onMapClick: (coordinates: [number, number]) => void;
   onPinDrag: (userId: string, coordinates: [number, number]) => void;
   mapboxToken: string;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDrag, mapboxToken }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ users, currentUser, onMapClick, onPinDrag, mapboxToken }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, mapboxgl.Marker>>(new Map());
@@ -82,13 +84,26 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
       markerElement.style.backgroundColor = user.pinned ? '#3B82F6' : '#10B981';
       markerElement.style.border = '2px solid white';
       markerElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-      markerElement.style.cursor = 'grab';
       markerElement.style.transformOrigin = 'center';
       markerElement.style.transition = 'transform 0.2s ease-in-out';
 
+      // Check if current user can move this pin
+      const canMovePin = canMovePinForUser(currentUser, user);
+      markerElement.style.cursor = canMovePin ? 'grab' : 'pointer';
+
+      // Add visual indicator for non-movable pins
+      if (!canMovePin) {
+        markerElement.style.opacity = '0.8';
+        markerElement.title = 'Pin locked - you can only move your own pin';
+      } else {
+        markerElement.title = canMovePin && currentUser.id !== user.id ? 
+          'You can move this pin (admin)' : 
+          'You can move this pin (your pin)';
+      }
+
       const marker = new mapboxgl.Marker({
         element: markerElement,
-        draggable: true
+        draggable: canMovePin
       })
         .setLngLat(user.location!)
         .setPopup(
@@ -106,6 +121,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
                 <div class="text-xs text-gray-500 mt-1">${user.email}</div>
                 <div class="text-xs text-blue-600 mt-2">
                   ${user.location![0].toFixed(6)}, ${user.location![1].toFixed(6)}
+                </div>
+                <div class="text-xs mt-2 ${canMovePin ? 'text-green-600' : 'text-orange-600'}">
+                  ${canMovePin ? 
+                    (currentUser.id === user.id ? '🔓 You can move this pin' : '🔓 Movable (admin)') : 
+                    '🔒 Pin locked'
+                  }
                 </div>
               </div>
             `)
@@ -139,19 +160,21 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
         }
       });
 
-      // Handle drag end event
-      marker.on('dragend', () => {
-        const lngLat = marker.getLngLat();
-        const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
-        console.log(`User ${user.name} dragged to:`, newCoordinates);
-        onPinDrag(user.id, newCoordinates);
-      });
+      // Handle drag end event (only if draggable)
+      if (canMovePin) {
+        marker.on('dragend', () => {
+          const lngLat = marker.getLngLat();
+          const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
+          console.log(`User ${user.name} dragged to:`, newCoordinates);
+          onPinDrag(user.id, newCoordinates);
+        });
+      }
 
       markers.current.set(user.id, marker);
     });
 
     console.log(`Added ${markers.current.size} markers to map`);
-  }, [users, onPinDrag, mapReady]);
+  }, [users, currentUser, onPinDrag, mapReady]);
 
   return (
     <div className="relative w-full h-full">
