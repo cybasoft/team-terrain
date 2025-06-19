@@ -20,32 +20,32 @@ export interface AuthResponse {
  */
 export const authenticateUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
-    // First, fetch all users from the API
-    const usersResponse = await authenticatedFetch(API_ENDPOINTS.USERS);
+    // Send login credentials to the login endpoint
+    const loginResponse = await authenticatedFetch(API_ENDPOINTS.LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({
+        email: credentials.email.trim(),
+        password: credentials.password.trim(),
+        action: 'login'
+      }),
+    });
     
-    if (!usersResponse.ok) {
-      throw new Error(`Failed to fetch users: ${usersResponse.status} ${usersResponse.statusText}`);
+    if (!loginResponse.ok) {
+      throw new Error(`Login failed: ${loginResponse.status} ${loginResponse.statusText}`);
     }
     
-    const userData = await usersResponse.json();
-    const users: User[] = userData.users || userData;
+    const loginData = await loginResponse.json();
     
-    // Find user by email and password
-    // In a real system, you'd send credentials to a login endpoint
-    const authenticatedUser = users.find(user => 
-      user.email === credentials.email.trim() && 
-      user.password === credentials.password.trim()
-    );
-    
-    if (authenticatedUser) {
+    // Check if login was successful and user data is returned
+    if (loginData.success && loginData.user) {
       return {
         success: true,
-        user: authenticatedUser
+        user: loginData.user
       };
     } else {
       return {
         success: false,
-        message: 'Invalid email or password. Please check your credentials and try again.'
+        message: loginData.message || 'Invalid email or password. Please check your credentials and try again.'
       };
     }
     

@@ -29,6 +29,7 @@ npm run dev
 - `VITE_API_BASE_URL`: Base URL for API endpoints
 - `VITE_LOCATION_TRACKER_ENDPOINT`: Location tracker endpoint path
 - `VITE_USERS_ENDPOINT`: Users endpoint path
+- `VITE_LOGIN_ENDPOINT`: Login endpoint path for authentication
 
 ## Authentication & Permissions
 
@@ -37,7 +38,8 @@ The application uses **email and password authentication** with role-based permi
 ### Login
 
 - Users must provide both **email** and **password** to log in
-- Authentication is validated against the API data
+- Authentication uses POST request to dedicated login endpoint (`VITE_LOGIN_ENDPOINT`)
+- Login credentials are sent securely to the server for validation
 - Sessions are persisted in localStorage for convenience
 - Fallback authentication is available if API is temporarily unavailable
 

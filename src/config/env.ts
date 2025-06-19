@@ -27,6 +27,7 @@ export const config = {
     endpoints: {
       locationTracker: import.meta.env.VITE_LOCATION_TRACKER_ENDPOINT || '/webhook-test/fa854d30-aefc-4f26-b3d7-e38a1551e448',
       users: import.meta.env.VITE_USERS_ENDPOINT || '/webhook-test/c853c89e-8a9f-49ee-84e6-586c1552c42f',
+      login: import.meta.env.VITE_LOGIN_ENDPOINT || '/webhook/c853c89e-8a9f-49ee-84e6-586c1552c42f',
     },
   },
 
