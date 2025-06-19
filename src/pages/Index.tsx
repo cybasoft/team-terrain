@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import usersData from '../data/users.json';
 
+const API_ENDPOINT = 'https://n8.cybasoft.com/webhook-test/fa854d30-aefc-4f26-b3d7-e38a1551e448';
+
 const Index = () => {
   const [users, setUsers] = useState<User[]>(usersData.users);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -67,23 +69,56 @@ const Index = () => {
     setSidebarOpen(false);
   };
 
-  const handlePinConfirm = (userId: string, password: string, coordinates: [number, number]) => {
+  const handlePinConfirm = async (userId: string, password: string, coordinates: [number, number]) => {
     console.log('Attempting to pin user:', userId, 'at coordinates:', coordinates);
     
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user =>
-        user.id === userId
-          ? { ...user, location: coordinates, pinned: true }
-          : user
-      );
-      console.log('Updated users state:', updatedUsers);
-      return updatedUsers;
-    });
-    
-    toast({
-      title: "Location pinned successfully!",
-      description: `${selectedUser?.name} has been pinned to the map.`,
-    });
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    try {
+      // Send data to REST API
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          name: user.name,
+          coordinates: coordinates,
+          timestamp: new Date().toISOString(),
+          action: 'pin_location'
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state only after successful API call
+        setUsers(prevUsers => {
+          const updatedUsers = prevUsers.map(user =>
+            user.id === userId
+              ? { ...user, location: coordinates, pinned: true }
+              : user
+          );
+          console.log('Updated users state:', updatedUsers);
+          return updatedUsers;
+        });
+        
+        toast({
+          title: "Location pinned successfully!",
+          description: `${selectedUser?.name} has been pinned to the map and saved to the server.`,
+        });
+      } else {
+        throw new Error('Failed to save to server');
+      }
+    } catch (error) {
+      console.error('Error saving location:', error);
+      toast({
+        title: "Error saving location",
+        description: "Failed to save location to server. Please try again.",
+        variant: "destructive"
+      });
+      return; // Don't update local state if API call failed
+    }
     
     setPendingCoordinates(null);
     setSelectedUser(null);
