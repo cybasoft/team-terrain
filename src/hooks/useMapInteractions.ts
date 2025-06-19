@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
 import { authenticatedFetch } from '../lib/auth';
 import { formatCoordinates } from '../lib/coordinates';
-import { canMovePinForUser, canPinForUser } from '../lib/permissions';
+import { canMovePinForUser, canPinForUser, canDeletePinForUser } from '../lib/permissions';
 
 export const useMapInteractions = (
   users: User[], 
@@ -242,6 +242,59 @@ export const useMapInteractions = (
     }
   };
 
+  const handlePinDelete = useCallback(async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    // Check permissions before allowing deletion
+    if (!canDeletePinForUser(currentUser, user)) {
+      toast({
+        title: "Permission denied",
+        description: "You can only delete your own pin or need admin permissions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const response = await authenticatedFetch(API_ENDPOINTS.LOCATION_TRACKER, {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: userId,
+          name: user.name,
+          coordinates: "", // Empty string to delete the pin
+          timestamp: new Date().toISOString(),
+          action: 'delete_location'
+        }),
+      });
+
+      if (response.ok) {
+        setUsers(prevUsers => {
+          const updatedUsers = prevUsers.map(u =>
+            u.id === userId
+              ? { ...u, coordinates: "", location: undefined, pinned: false }
+              : u
+          );
+          return updatedUsers;
+        });
+        
+        toast({
+          title: "Pin deleted successfully!",
+          description: `${user.name}'s location has been removed from the map.`,
+        });
+      } else {
+        throw new Error('Failed to delete from server');
+      }
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      toast({
+        title: "Error deleting location",
+        description: "Failed to delete location from server. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [users, currentUser, setUsers, toast]);
+
   const resetInteractions = () => {
     setSidebarOpen(false);
     setSelectedUser(null);
@@ -267,6 +320,7 @@ export const useMapInteractions = (
     handlePinConfirm,
     handlePinDrag,
     handleUserDropOnMap,
+    handlePinDelete,
     hasAvailableUsers,
     resetInteractions
   };

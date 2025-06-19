@@ -28,6 +28,7 @@ const Index = () => {
     handlePinConfirm,
     handlePinDrag,
     handleUserDropOnMap,
+    handlePinDelete,
     hasAvailableUsers,
     resetInteractions
   } = useMapInteractions(users, setUsers, currentUser);
@@ -75,6 +76,7 @@ const Index = () => {
             currentUser={currentUser}
             onMapClick={handleMapClick}
             onPinDrag={handlePinDrag}
+            onPinDelete={handlePinDelete}
             onUserDropOnMap={handleUserDropOnMap}
             hasAvailableUsers={hasAvailableUsers}
             mapboxToken={mapboxToken}

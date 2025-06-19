@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
 import { config } from '../config/env';
-import { canMovePinForUser, isAdmin } from '../lib/permissions';
+import { canMovePinForUser, canDeletePinForUser, isAdmin } from '../lib/permissions';
 import MapSearchControl from './MapSearchControl';
 
 interface MapComponentProps {
@@ -12,6 +12,7 @@ interface MapComponentProps {
   currentUser: User;
   onMapClick: (coordinates: [number, number]) => void;
   onPinDrag: (userId: string, coordinates: [number, number]) => void;
+  onPinDelete?: (userId: string) => void;
   onUserDropOnMap?: (user: User, coordinates: [number, number]) => void;
   hasAvailableUsers?: () => boolean;
   mapboxToken: string;
@@ -22,6 +23,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   currentUser, 
   onMapClick, 
   onPinDrag, 
+  onPinDelete,
   onUserDropOnMap,
   hasAvailableUsers,
   mapboxToken 
@@ -32,6 +34,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const searchMarker = useRef<mapboxgl.Marker | null>(null);
   const onMapClickRef = useRef(onMapClick);
   const onPinDragRef = useRef(onPinDrag);
+  const onPinDeleteRef = useRef(onPinDelete);
   const [mapReady, setMapReady] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -39,11 +42,34 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     onMapClickRef.current = onMapClick;
     onPinDragRef.current = onPinDrag;
-  }, [onMapClick, onPinDrag]);
+    onPinDeleteRef.current = onPinDelete;
+  }, [onMapClick, onPinDrag, onPinDelete]);
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
 
+    // Set up global function for pin deletion
+    (window as typeof window & { deleteUserPin: (userId: string) => void }).deleteUserPin = (userId: string) => {
+      if (onPinDeleteRef.current) {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        // Show a confirmation dialog
+        if (confirm(`Are you sure you want to delete ${user.name}'s pin from the map?`)) {
+          // Close any open popups
+          const popups = document.querySelectorAll('.mapboxgl-popup');
+          popups.forEach(popup => {
+            const popupElement = popup as HTMLElement;
+            popupElement.style.opacity = '0';
+            setTimeout(() => popupElement.remove(), 200);
+          });
+          
+          // Call the delete handler
+          onPinDeleteRef.current(userId);
+        }
+      }
+    };
+    
     mapboxgl.accessToken = mapboxToken;
     
     map.current = new mapboxgl.Map({
@@ -75,8 +101,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
     return () => {
       map.current?.remove();
       setMapReady(false);
+      // Remove global functions
+      delete (window as typeof window & { 
+        deleteUserPin?: (userId: string) => void,
+        selectSearchLocation?: (coords: [number, number]) => void 
+      }).deleteUserPin;
+      delete (window as typeof window & { 
+        deleteUserPin?: (userId: string) => void,
+        selectSearchLocation?: (coords: [number, number]) => void 
+      }).selectSearchLocation;
     };
-  }, [mapboxToken]); // Removed onMapClick from dependencies
+  }, [mapboxToken, users]); // Removed onMapClick from dependencies
 
   useEffect(() => {
     if (!map.current || !mapReady) {
@@ -104,6 +139,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
       // Check if current user can move this pin
       const canMovePin = canMovePinForUser(currentUser, user);
+      const canDeletePin = canDeletePinForUser(currentUser, user);
       markerElement.style.cursor = canMovePin ? 'grab' : 'pointer';
 
       // Add visual indicator for non-movable pins
@@ -130,7 +166,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
             className: 'user-info-popup'
           })
             .setHTML(`
-              <div class="p-2">
+              <div class="p-3">
                 <div class="font-semibold text-sm text-gray-900">${user.name}</div>
                 <div class="text-xs text-gray-600 mt-1">${user.pinned ? 'Pinned Location' : 'Located'}</div>
                 <div class="text-xs text-gray-500 mt-1">${user.email}</div>
@@ -143,6 +179,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
                     '🔒 Pin locked'
                   }
                 </div>
+                ${canDeletePin ? `
+                  <div class="mt-3 pt-2 border-t border-gray-200">
+                    <button 
+                      onclick="window.deleteUserPin('${user.id}')"
+                      class="w-full bg-red-600 text-white px-3 py-2 rounded text-xs font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
+                      title="Delete this pin"
+                    >
+                      🗑️ Delete Pin
+                    </button>
+                  </div>
+                ` : ''}
               </div>
             `)
         )

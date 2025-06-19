@@ -67,3 +67,23 @@ export const canPinForUser = (currentUser: User, targetUser: User): boolean => {
 export const getUserPermissionLevel = (user: User): 'admin' | 'user' => {
   return isAdmin(user) ? 'admin' : 'user';
 };
+
+/**
+ * Check if a user can delete a pin
+ * @param currentUser - The current logged-in user
+ * @param targetUser - The user whose pin is being deleted
+ * @returns true if user can delete the pin, false otherwise
+ */
+export const canDeletePinForUser = (currentUser: User, targetUser: User): boolean => {
+  // Admin users can delete any pin
+  if (isAdmin(currentUser)) {
+    return true;
+  }
+  
+  // Users can delete their own pin
+  if (currentUser.id === targetUser.id) {
+    return true;
+  }
+  
+  return false;
+};

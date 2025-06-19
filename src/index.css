@@ -200,3 +200,18 @@
   font-size: 16px !important;
   padding: 4px 8px !important;
 }
+
+/* Pin delete button styles */
+.user-info-popup button {
+  font-family: inherit !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.user-info-popup button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+.user-info-popup button:active {
+  transform: translateY(0) !important;
+}
