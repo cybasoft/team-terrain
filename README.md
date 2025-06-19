@@ -1,14 +1,17 @@
 # Employees Map
 
+![image](public/screenshots/main.png "screenshot")
+
 ## Setup
 
-```
+```bash
 npm i
 cp .env.example .env
 npm run dev
 ```
 
 ### Required Variables
+
 - `VITE_MAPBOX_ACCESS_TOKEN`: Your Mapbox access token (get one from [Mapbox](https://account.mapbox.com/access-tokens/))
 - `VITE_API_AUTH_TOKEN`: Authorization token for API requests (Bearer token) - **Required for authentication**
 
