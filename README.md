@@ -1,5 +1,16 @@
 # Employees Map
 
+This app allows you to create a geographical overview of user locations. These locations can be general or specific. This is manually updated and does not utilize any device locations.
+Admin can update everyone's location. Users can only update their own. 
+
+Currently implemented using n8n webhooks as endpoints which in turn interacts with records from Teable.
+You need: 
+- Login endpoint that receives email/password (POST)
+- Users endpoint that gets users (id, email, name, coordinates) (GET)
+- Update endpoint to update cordinates using user id (POST)
+
+> 💡 You can modify this to map anything else besides users!
+
 ![image](public/screenshots/main.png "screenshot")
 
 ## Setup
