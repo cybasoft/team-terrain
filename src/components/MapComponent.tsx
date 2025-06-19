@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { User } from '../types/User';
 import { config } from '../config/env';
 import { canMovePinForUser, isAdmin } from '../lib/permissions';
+import MapSearchControl from './MapSearchControl';
 
 interface MapComponentProps {
   users: User[];
@@ -12,6 +13,7 @@ interface MapComponentProps {
   onMapClick: (coordinates: [number, number]) => void;
   onPinDrag: (userId: string, coordinates: [number, number]) => void;
   onUserDropOnMap?: (user: User, coordinates: [number, number]) => void;
+  hasAvailableUsers?: () => boolean;
   mapboxToken: string;
 }
 
@@ -21,13 +23,23 @@ const MapComponent: React.FC<MapComponentProps> = ({
   onMapClick, 
   onPinDrag, 
   onUserDropOnMap,
+  hasAvailableUsers,
   mapboxToken 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const searchMarker = useRef<mapboxgl.Marker | null>(null);
+  const onMapClickRef = useRef(onMapClick);
+  const onPinDragRef = useRef(onPinDrag);
   const [mapReady, setMapReady] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Update the refs when functions change
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+    onPinDragRef.current = onPinDrag;
+  }, [onMapClick, onPinDrag]);
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -50,7 +62,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       // Only trigger map click if not clicking on a marker
       const features = map.current!.queryRenderedFeatures(e.point);
       if (features.length === 0) {
-        onMapClick([e.lngLat.lng, e.lngLat.lat]);
+        onMapClickRef.current([e.lngLat.lng, e.lngLat.lat]);
       }
     });
 
@@ -64,7 +76,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       map.current?.remove();
       setMapReady(false);
     };
-  }, [mapboxToken, onMapClick]);
+  }, [mapboxToken]); // Removed onMapClick from dependencies
 
   useEffect(() => {
     if (!map.current || !mapReady) {
@@ -168,14 +180,98 @@ const MapComponent: React.FC<MapComponentProps> = ({
         marker.on('dragend', () => {
           const lngLat = marker.getLngLat();
           const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
-          onPinDrag(user.id, newCoordinates);
+          onPinDragRef.current(user.id, newCoordinates);
         });
       }
 
       markers.current.set(user.id, marker);
     });
 
-  }, [users, currentUser, onPinDrag, mapReady]);
+  }, [users, currentUser, mapReady]);
+
+  // Handle location search result
+  const handleLocationSearch = (coordinates: [number, number], placeName: string) => {
+    if (!map.current) return;
+
+    // Remove existing search marker
+    if (searchMarker.current) {
+      searchMarker.current.remove();
+    }
+
+    // Create search result marker
+    const searchElement = document.createElement('div');
+    searchElement.className = 'search-marker';
+    searchElement.style.width = '30px';
+    searchElement.style.height = '30px';
+    searchElement.style.borderRadius = '50%';
+    searchElement.style.backgroundColor = '#FF6B6B';
+    searchElement.style.border = '3px solid white';
+    searchElement.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    searchElement.style.cursor = 'pointer';
+    searchElement.style.display = 'flex';
+    searchElement.style.alignItems = 'center';
+    searchElement.style.justifyContent = 'center';
+    searchElement.style.fontSize = '14px';
+    searchElement.innerHTML = '📍';
+    searchElement.style.animation = 'bounce 2s infinite';
+
+    // Create search marker
+    searchMarker.current = new mapboxgl.Marker({
+      element: searchElement,
+      draggable: false
+    })
+      .setLngLat(coordinates)
+      .setPopup(
+        new mapboxgl.Popup({ 
+          offset: 25, 
+          closeButton: true,
+          className: 'search-result-popup'
+        })
+          .setHTML(`
+            <div class="p-3">
+              <div class="font-semibold text-sm text-gray-900 mb-2">📍 Search Result</div>
+              <div class="text-sm text-gray-700 mb-3">${placeName}</div>
+              <div class="text-xs text-blue-600 mb-3">
+                ${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}
+              </div>
+              <button 
+                onclick="window.selectSearchLocation([${coordinates[0]}, ${coordinates[1]}])"
+                class="w-full bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                Pin Here
+              </button>
+            </div>
+          `)
+      )
+      .addTo(map.current);
+
+    // Fly to the search result
+    map.current.flyTo({
+      center: coordinates,
+      zoom: Math.max(map.current.getZoom(), 14),
+      duration: 1500
+    });
+
+    // Show popup
+    searchMarker.current.getPopup()?.addTo(map.current);
+
+    // Set up global function for popup button
+    (window as typeof window & { selectSearchLocation: (coords: [number, number]) => void }).selectSearchLocation = (coords: [number, number]) => {
+      onMapClick(coords);
+      if (searchMarker.current) {
+        searchMarker.current.remove();
+        searchMarker.current = null;
+      }
+    };
+
+    // Auto-remove search marker after 30 seconds
+    setTimeout(() => {
+      if (searchMarker.current) {
+        searchMarker.current.remove();
+        searchMarker.current = null;
+      }
+    }, 30000);
+  };
 
   // Handle drag and drop events for dropping users onto the map
   const handleDragOver = (e: React.DragEvent) => {
@@ -226,6 +322,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   return (
     <div className="relative w-full h-full">
+      {/* Search Control */}
+      <div className="absolute top-4 left-4 right-4 z-20">
+        <MapSearchControl
+          mapboxToken={mapboxToken}
+          onLocationSelect={handleLocationSearch}
+          currentUser={currentUser}
+          hasAvailableUsers={hasAvailableUsers?.() ?? true}
+          className="max-w-md"
+        />
+      </div>
+
       <div 
         ref={mapContainer} 
         className={`absolute inset-0 rounded-lg shadow-lg transition-all duration-200 ${
@@ -235,6 +342,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       />
+      
       {isDragOver && isAdmin(currentUser) && (
         <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-lg flex items-center justify-center pointer-events-none z-10 map-drag-overlay">
           <div className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl font-medium border-2 border-blue-400">

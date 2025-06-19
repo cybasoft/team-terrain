@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { User } from '../types/User';
 import { API_ENDPOINTS } from '../constants/api';
 import { useToast } from './use-toast';
@@ -18,7 +18,7 @@ export const useMapInteractions = (
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleMapClick = (coordinates: [number, number]) => {
+  const handleMapClick = useCallback((coordinates: [number, number]) => {
     // Check if there are any users the current user can pin for
     const availableUsers = users.filter(u => !u.location && canPinForUser(currentUser, u));
     
@@ -52,7 +52,7 @@ export const useMapInteractions = (
       setPendingCoordinates(coordinates);
       setSidebarOpen(true);
     }
-  };
+  }, [users, currentUser, toast]);
 
   const handleUserSelect = (user: User) => {
     // Double-check permissions before allowing selection
@@ -128,7 +128,7 @@ export const useMapInteractions = (
     setDialogOpen(false);
   };
 
-  const handlePinDrag = async (userId: string, coordinates: [number, number]) => {
+  const handlePinDrag = useCallback(async (userId: string, coordinates: [number, number]) => {
     const user = users.find(u => u.id === userId);
     if (!user) return;
 
@@ -190,7 +190,7 @@ export const useMapInteractions = (
       // Force re-render to revert marker position
       setUsers(prevUsers => [...prevUsers]);
     }
-  };
+  }, [users, currentUser, toast, setUsers]);
 
   const handleUserDropOnMap = async (user: User, coordinates: [number, number]) => {
     // Check permissions - only admins can drag users to map
@@ -249,6 +249,12 @@ export const useMapInteractions = (
     setDialogOpen(false);
   };
 
+  // Check if there are users available to pin
+  const hasAvailableUsers = () => {
+    const availableUsers = users.filter(u => !u.location && canPinForUser(currentUser, u));
+    return availableUsers.length > 0;
+  };
+
   return {
     sidebarOpen,
     setSidebarOpen,
@@ -261,6 +267,7 @@ export const useMapInteractions = (
     handlePinConfirm,
     handlePinDrag,
     handleUserDropOnMap,
+    hasAvailableUsers,
     resetInteractions
   };
 };
