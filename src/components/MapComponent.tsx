@@ -83,6 +83,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
       markerElement.style.border = '2px solid white';
       markerElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
       markerElement.style.cursor = 'grab';
+      markerElement.style.transformOrigin = 'center';
+      markerElement.style.transition = 'transform 0.2s ease-in-out';
 
       const marker = new mapboxgl.Marker({
         element: markerElement,
@@ -90,13 +92,52 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
       })
         .setLngLat(user.location!)
         .setPopup(
-          new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: false })
+          new mapboxgl.Popup({ 
+            offset: 25, 
+            closeButton: true, 
+            closeOnClick: false,
+            closeOnMove: false,
+            className: 'user-info-popup'
+          })
             .setHTML(`
-              <div class="font-semibold text-sm">${user.name}</div>
-              <div class="text-xs text-gray-600">${user.pinned ? 'Pinned' : 'Located'}</div>
+              <div class="p-2">
+                <div class="font-semibold text-sm text-gray-900">${user.name}</div>
+                <div class="text-xs text-gray-600 mt-1">${user.pinned ? 'Pinned Location' : 'Located'}</div>
+                ${user.email ? `<div class="text-xs text-gray-500 mt-1">${user.email}</div>` : ''}
+                <div class="text-xs text-blue-600 mt-2">
+                  ${user.location![0].toFixed(6)}, ${user.location![1].toFixed(6)}
+                </div>
+              </div>
             `)
         )
         .addTo(map.current!);
+
+      // Show popup on hover
+      markerElement.addEventListener('mouseenter', () => {
+        marker.getPopup()?.addTo(map.current!);
+      });
+
+      // Hide popup when mouse leaves (with slight delay)
+      markerElement.addEventListener('mouseleave', () => {
+        setTimeout(() => {
+          if (!marker.getPopup()?.isOpen()) return;
+          const popupElement = document.querySelector('.user-info-popup');
+          if (popupElement && !popupElement.matches(':hover')) {
+            marker.getPopup()?.remove();
+          }
+        }, 100);
+      });
+
+      // Toggle popup on click
+      markerElement.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const popup = marker.getPopup();
+        if (popup?.isOpen()) {
+          popup.remove();
+        } else {
+          popup?.addTo(map.current!);
+        }
+      });
 
       // Handle drag end event
       marker.on('dragend', () => {
@@ -104,11 +145,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ users, onMapClick, onPinDra
         const newCoordinates: [number, number] = [lngLat.lng, lngLat.lat];
         console.log(`User ${user.name} dragged to:`, newCoordinates);
         onPinDrag(user.id, newCoordinates);
-      });
-
-      // Prevent marker click from triggering map click
-      markerElement.addEventListener('click', (e) => {
-        e.stopPropagation();
       });
 
       markers.current.set(user.id, marker);
