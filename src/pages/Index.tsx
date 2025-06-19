@@ -9,12 +9,13 @@ import LoginForm from '../components/LoginForm';
 import { User } from '../types/User';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import usersData from '../data/users.json';
 
 const API_ENDPOINT = 'https://n8.cybasoft.com/webhook-test/fa854d30-aefc-4f26-b3d7-e38a1551e448';
+const USERS_API_ENDPOINT = 'https://n8.cybasoft.com/webhook-test/c853c89e-8a9f-49ee-84e6-586c1552c42f';
 
 const Index = () => {
-  const [users, setUsers] = useState<User[]>(usersData.users);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -30,6 +31,40 @@ const Index = () => {
       setMapboxToken(savedToken);
     }
   }, []);
+
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        console.log('Fetching users from API...');
+        const response = await fetch(USERS_API_ENDPOINT);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Users fetched from API:', data);
+          // Assuming the API returns users in the format we expect
+          setUsers(data.users || data);
+        } else {
+          console.error('Failed to fetch users from API');
+          toast({
+            title: "Error loading users",
+            description: "Failed to load users from server. Please try again.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error loading users",
+          description: "Failed to load users from server. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, [toast]);
 
   const handleLogin = (user: User) => {
     console.log('User logged in:', user.name);
@@ -123,6 +158,18 @@ const Index = () => {
     setPendingCoordinates(null);
     setSelectedUser(null);
   };
+
+  // Show loading screen while fetching users
+  if (isLoadingUsers) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show login form if no user is logged in
   if (!currentUser) {
