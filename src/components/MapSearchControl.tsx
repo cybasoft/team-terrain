@@ -166,14 +166,14 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
             ref={inputRef}
             type="text"
             placeholder={hasAvailableUsers ? 
-              "Search for a location..." : 
+              "Search location..." : 
               "No users to pin"
             }
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={!hasAvailableUsers}
-            className={`pl-10 pr-24 shadow-lg border-gray-200 ${
+            className={`pl-10 pr-16 sm:pr-24 h-10 sm:h-9 text-sm shadow-lg border-gray-200 ${
               !hasAvailableUsers ? 'bg-gray-50 text-gray-500' : 'bg-white'
             }`}
             onFocus={() => results.length > 0 && setShowResults(true)}
@@ -185,9 +185,9 @@ const MapSearchControl: React.FC<MapSearchControlProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 hover:bg-gray-100"
+                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 hover:bg-gray-100"
                   >
-                    <HelpCircle className="h-3 w-3 text-gray-400" />
+                    <HelpCircle className="h-4 w-4 sm:h-3 sm:w-3 text-gray-400" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">

@@ -99,7 +99,7 @@ The app has two levels of access for pin management:
 
 ### Map Features
 
-1. **User Location Pins**: Displays all employee locations on an interactive map
+1. **User Location Pins**: Displays all user locations on an interactive map
 2. **Real-time Updates**: Pins are updated in real-time when moved or added
 3. **Info Popups**: Click pins to view detailed user information
 4. **Map Search**: Search for locations to easily navigate the map

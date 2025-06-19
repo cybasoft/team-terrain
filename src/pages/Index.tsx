@@ -56,6 +56,15 @@ const Index = () => {
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
+      {/* Mobile overlay when sidebar is open */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
       <UserSidebar
         users={users}
         currentUser={currentUser}

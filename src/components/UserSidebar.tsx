@@ -67,12 +67,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onToggle}
+          aria-hidden="true"
         />
       )}
       
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out
+        fixed left-0 top-0 h-full w-[90vw] max-w-[320px] sm:w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:relative lg:translate-x-0 lg:z-auto
       `}>
@@ -101,8 +102,20 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ users, currentUser, isOpen, o
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-8 py-5 sm:py-2 text-base sm:text-sm"
+                aria-label="Search users"
               />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 p-1 h-8 w-8"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4 text-gray-400" />
+                </Button>
+              )}
             </div>
           </div>
 

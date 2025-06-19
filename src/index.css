@@ -215,3 +215,88 @@
 .user-info-popup button:active {
   transform: translateY(0) !important;
 }
+
+/* --------------------------------- */
+/* Mobile Responsiveness                 */
+/* --------------------------------- */
+
+@media screen and (max-width: 640px) {
+  /* Make map controls more touch-friendly on mobile */
+  .mapboxgl-ctrl-group {
+    margin-top: 5px;
+  }
+  
+  .mapboxgl-ctrl-group button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Ensure popups are readable on mobile */
+  .mapboxgl-popup-content {
+    max-width: 260px;
+  }
+  
+  /* Better touch targets in the header for mobile */
+  .header-mobile-button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+}
+
+/* Improve scrolling on mobile devices */
+@media (pointer: coarse) {
+  .mapboxgl-popup-content {
+    padding: 14px;
+  }
+  
+  /* More space for touch targets */
+  button.mapboxgl-popup-close-button {
+    padding: 6px;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Make popup buttons easier to tap */
+  .mapboxgl-popup-content button {
+    min-height: 38px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  /* Larger markers for better tapping on mobile */
+  .marker-custom {
+    min-width: 24px !important;
+    min-height: 24px !important;
+  }
+  
+  /* Better touch target for popup close button */
+  .mapboxgl-popup-close-button {
+    font-size: 18px;
+    padding: 5px 10px;
+  }
+}
+
+/* Mobile app header styles */
+@media (max-width: 480px) {
+  /* Create more space in header on very small screens */
+  .app-header-mobile-spacing {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Slightly smaller title on very small screens */
+  .app-header-title {
+    font-size: 1rem !important;
+  }
+  
+  /* Make buttons more compact */
+  .app-header-button {
+    padding: 0.25rem !important;
+  }
+  
+  /* Create more uniform button spacing */
+  .app-header-controls {
+    gap: 0.5rem !important;
+  }
+}

@@ -174,7 +174,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
             .setHTML(`
               <div class="p-3">
                 <div class="font-semibold text-sm text-gray-900">${user.name}</div>
-                <div class="text-xs text-gray-600 mt-1">${user.pinned ? 'Pinned Location' : 'Located'}</div>
+                <div class="text-xs text-gray-600 mt-1 hidden">${user.pinned ? 'Pinned Location' : 'Located'}</div>
                 <div class="text-xs text-gray-500 mt-1">${user.email}</div>
                 <div class="text-xs text-blue-600 mt-2">
                   ${user.location![0].toFixed(6)}, ${user.location![1].toFixed(6)}
@@ -412,13 +412,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <div className="relative w-full h-full">
       {/* Search Control - positioned to leave space for navigation controls */}
-      <div className="absolute top-4 left-4 right-20 z-20">
+      <div className="absolute top-4 left-4 right-14 sm:right-16 z-10">
         <MapSearchControl
           mapboxToken={mapboxToken}
           onLocationSelect={handleLocationSearch}
           currentUser={currentUser}
           hasAvailableUsers={hasAvailableUsers?.() ?? true}
-          className="max-w-md"
+          className="w-full sm:max-w-md"
         />
       </div>
 
