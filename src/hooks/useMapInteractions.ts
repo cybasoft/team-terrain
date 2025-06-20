@@ -16,6 +16,8 @@ export const useMapInteractions = (
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [pendingCoordinates, setPendingCoordinates] = useState<[number, number] | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [moveConfirmDialogOpen, setMoveConfirmDialogOpen] = useState(false);
+  const [pendingMove, setPendingMove] = useState<{userId: string, coordinates: [number, number]} | null>(null);
   const { toast } = useToast();
 
   const handleMapClick = useCallback((coordinates: [number, number]) => {
@@ -158,33 +160,22 @@ export const useMapInteractions = (
     setDialogOpen(false);
   };
 
-  const handlePinDrag = useCallback(async (userId: string, coordinates: [number, number]) => {
+  // New method for handling pin move confirmation
+  const confirmPinMove = useCallback(async () => {
+    if (!pendingMove) return;
+    
+    const { userId, coordinates } = pendingMove;
     const user = users.find(u => u.id === userId);
-    if (!user) {
-      console.error(`handlePinDrag: User with ID ${userId} not found`);
-      return;
-    }
-
-    // Check permissions before allowing drag
-    if (!canMovePinForUser(currentUser, user)) {
-      toast({
-        title: "Permission denied",
-        description: "You can only move your own pin or you need admin permissions.",
-        variant: "destructive"
-      });
-      // Force re-render to revert marker position
-      setUsers(prevUsers => [...prevUsers]);
-      return;
-    }
-
+    if (!user) return;
+    
     try {
       // Store original values in case we need to revert
       const originalCoordinates = user.location;
       const originalCity = user.city;
       const originalState = user.state;
       const originalCountry = user.country;
-
-      console.log(`Starting pin drag for user ${user.name} to ${coordinates[0]}, ${coordinates[1]}`);
+      
+      console.log(`Confirmed pin move for user ${user.name} to ${coordinates[0]}, ${coordinates[1]}`);
 
       // Get city, state and country information using reverse geocoding
       const locationInfo = await reverseGeocode(coordinates);
@@ -263,8 +254,39 @@ export const useMapInteractions = (
       
       // Force re-render to revert marker position
       setUsers(prevUsers => [...prevUsers]);
+    } finally {
+      // Reset the pending move
+      setPendingMove(null);
+      setMoveConfirmDialogOpen(false);
     }
-  }, [users, currentUser, toast, setUsers]);
+  }, [users, setPendingMove, setMoveConfirmDialogOpen, pendingMove, toast, setUsers]);
+  
+  // Handle initial drag event - now just captures the coordinates for confirmation
+  const handlePinDrag = useCallback((userId: string, coordinates: [number, number]) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      console.error(`handlePinDrag: User with ID ${userId} not found`);
+      return;
+    }
+
+    // Check permissions before allowing drag
+    if (!canMovePinForUser(currentUser, user)) {
+      toast({
+        title: "Permission denied",
+        description: "You can only move your own pin or you need admin permissions.",
+        variant: "destructive"
+      });
+      // Force re-render to revert marker position
+      setUsers(prevUsers => [...prevUsers]);
+      return;
+    }
+
+    console.log(`Starting pin drag for user ${user.name} to ${coordinates[0]}, ${coordinates[1]}`);
+    
+    // Store the pending move and open confirmation dialog
+    setPendingMove({ userId, coordinates });
+    setMoveConfirmDialogOpen(true);
+  }, [users, currentUser, toast, setUsers, setPendingMove, setMoveConfirmDialogOpen]);
 
   const handleUserDropOnMap = async (user: User, coordinates: [number, number]) => {
     // Check permissions - only admins can drag users to map
@@ -400,6 +422,13 @@ export const useMapInteractions = (
     return availableUsers.length > 0;
   };
 
+  const cancelPinMove = useCallback(() => {
+    setPendingMove(null);
+    setMoveConfirmDialogOpen(false);
+    // Force re-render to revert marker position
+    setUsers(prevUsers => [...prevUsers]);
+  }, [setPendingMove, setMoveConfirmDialogOpen, setUsers]);
+
   return {
     sidebarOpen,
     setSidebarOpen,
@@ -407,6 +436,11 @@ export const useMapInteractions = (
     pendingCoordinates,
     dialogOpen,
     setDialogOpen,
+    moveConfirmDialogOpen,
+    setMoveConfirmDialogOpen,
+    pendingMove,
+    confirmPinMove,
+    cancelPinMove,
     handleMapClick,
     handleUserSelect,
     handlePinConfirm,

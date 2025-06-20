@@ -6,6 +6,7 @@ import MapboxTokenInput from '../components/MapboxTokenInput';
 import LoginForm from '../components/LoginForm';
 import LoadingScreen from '../components/LoadingScreen';
 import AppHeader from '../components/AppHeader';
+import PinMoveConfirmDialog from '../components/PinMoveConfirmDialog';
 import { useUsers } from '../hooks/useUsers';
 import { useAuth } from '../hooks/useAuth';
 import { useMapInteractions } from '../hooks/useMapInteractions';
@@ -24,6 +25,11 @@ const Index = () => {
     pendingCoordinates,
     dialogOpen,
     setDialogOpen,
+    moveConfirmDialogOpen,
+    setMoveConfirmDialogOpen,
+    pendingMove,
+    confirmPinMove,
+    cancelPinMove,
     handleMapClick,
     handleUserSelect,
     handlePinConfirm,
@@ -104,6 +110,16 @@ const Index = () => {
         coordinates={pendingCoordinates}
         onConfirm={handlePinConfirm}
       />
+      
+      {pendingMove && (
+        <PinMoveConfirmDialog
+          open={moveConfirmDialogOpen}
+          onOpenChange={setMoveConfirmDialogOpen}
+          user={users.find(u => u.id === pendingMove.userId) || null}
+          onConfirm={confirmPinMove}
+          onCancel={cancelPinMove}
+        />
+      )}
     </div>
   );
 };
