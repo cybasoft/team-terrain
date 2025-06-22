@@ -26,8 +26,11 @@ const locationUpdateSchema = Joi.object({
   city: Joi.string().max(100).optional(),
   state: Joi.string().max(100).optional(),
   country: Joi.string().max(100).optional(),
-  user_id: Joi.string().optional()
-});
+  user_id: Joi.string().optional(),
+  userId: Joi.string().optional(),
+  // Temporarily allow name field to prevent validation errors (but don't process it)
+  name: Joi.string().optional()
+}).options({ stripUnknown: true });
 
 const validate = (schema) => {
   return (req, res, next) => {

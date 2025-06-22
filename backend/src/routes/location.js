@@ -8,13 +8,14 @@ const router = express.Router();
 
 // POST /api/location/update - Update user location
 router.post('/update', authenticateTokenOrApiKey, validate(locationUpdateSchema), asyncHandler(async (req, res) => {
-  const { coordinates, city, state, country, user_id } = req.body;
+  const { coordinates, city, state, country, user_id, userId } = req.body;
   const db = getDatabase();
   
-  // Determine user ID (from token or request body)
-  const userId = user_id || (req.user ? req.user.id : null);
+  // Determine user ID (from token or request body) - handle both user_id and userId
+  const userIdFromBody = user_id || userId;
+  const finalUserId = userIdFromBody || (req.user ? req.user.id : null);
   
-  if (!userId) {
+  if (!finalUserId) {
     return res.status(400).json({
       success: false,
       message: 'User ID is required'
@@ -22,7 +23,7 @@ router.post('/update', authenticateTokenOrApiKey, validate(locationUpdateSchema)
   }
 
   // Verify user exists
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+  const user = await db.get('SELECT * FROM users WHERE id = ?', [finalUserId]);
   
   if (!user) {
     return res.status(404).json({
@@ -34,17 +35,17 @@ router.post('/update', authenticateTokenOrApiKey, validate(locationUpdateSchema)
   // Update user's current location
   await db.run(
     'UPDATE users SET coordinates = ?, city = ?, state = ?, country = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [coordinates, city || '', state || '', country || '', userId]
+    [coordinates, city || '', state || '', country || '', finalUserId]
   );
 
   // Add to location history
   await db.run(
     'INSERT INTO location_updates (user_id, coordinates, city, state, country) VALUES (?, ?, ?, ?, ?)',
-    [userId, coordinates, city || '', state || '', country || '']
+    [finalUserId, coordinates, city || '', state || '', country || '']
   );
 
   // Get updated user
-  const updatedUser = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+  const updatedUser = await db.get('SELECT * FROM users WHERE id = ?', [finalUserId]);
   
   // Format user response
   const { password, ...userWithoutPassword } = updatedUser;

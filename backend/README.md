@@ -49,7 +49,7 @@ API_AUTH_TOKEN=your-api-auth-token-change-this
 
 # Security
 ADMIN_EMAILS=admin@teamterrain.com
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:8080
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
@@ -233,7 +233,7 @@ SELECT * FROM users;
 | `JWT_EXPIRES_IN` | JWT expiration | `7d` |
 | `API_AUTH_TOKEN` | API authentication token | Required |
 | `ADMIN_EMAILS` | Admin user emails (comma-separated) | `` |
-| `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:5173` |
+| `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:8080` |
 | `RATE_LIMIT_WINDOW_MS` | Rate limit window | `900000` (15 min) |
 | `RATE_LIMIT_MAX_REQUESTS` | Max requests per window | `100` |
 
@@ -394,7 +394,7 @@ After running the seed script:
 | `JWT_EXPIRES_IN` | JWT expiration | `7d` |
 | `API_AUTH_TOKEN` | API authentication token | Required |
 | `ADMIN_EMAILS` | Comma-separated admin emails | `` |
-| `CORS_ORIGIN` | CORS allowed origin | `http://localhost:5173` |
+| `CORS_ORIGIN` | CORS allowed origin | `http://localhost:8080` |
 | `RATE_LIMIT_WINDOW_MS` | Rate limit window | `900000` |
 | `RATE_LIMIT_MAX_REQUESTS` | Max requests per window | `100` |
 
