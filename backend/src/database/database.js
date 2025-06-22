@@ -1,52 +1,64 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 class Database {
   constructor() {
-    this.db = null;
+    this.pool = null;
   }
 
   async initialize() {
-    const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../database.sqlite');
+    // PostgreSQL connection configuration
+    const config = {
+      user: process.env.DB_USER || 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      database: process.env.DB_NAME || 'teamterrain',
+      password: process.env.DB_PASSWORD || 'password',
+      port: process.env.DB_PORT || 5432,
+      // Connection pool settings
+      max: 10, // max number of clients in pool
+      idleTimeoutMillis: 30000, // close idle clients after 30 seconds
+      connectionTimeoutMillis: 2000, // return error after 2 seconds if connection could not be established
+    };
+
+    this.pool = new Pool(config);
     
-    return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(dbPath, (err) => {
-        if (err) {
-          console.error('Error opening database:', err);
-          reject(err);
-        } else {
-          console.log('Connected to SQLite database');
-          this.createTables().then(resolve).catch(reject);
-        }
-      });
-    });
+    // Test the connection
+    try {
+      const client = await this.pool.connect();
+      console.log('Connected to PostgreSQL database');
+      client.release();
+      
+      await this.createTables();
+    } catch (err) {
+      console.error('Error connecting to PostgreSQL database:', err);
+      throw err;
+    }
   }
 
   async createTables() {
     const queries = [
       `CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
         coordinates TEXT,
-        city TEXT,
-        state TEXT,
-        country TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        city VARCHAR(255),
+        state VARCHAR(255),
+        country VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`,
       
       `CREATE TABLE IF NOT EXISTS location_updates (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
         coordinates TEXT NOT NULL,
-        city TEXT,
-        state TEXT,
-        country TEXT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
+        city VARCHAR(255),
+        state VARCHAR(255),
+        country VARCHAR(255),
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )`,
 
       `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
@@ -64,72 +76,66 @@ class Database {
 
   async createDefaultAdmin() {
     const adminEmail = 'admin@teamterrain.com';
-    const adminExists = await this.get('SELECT id FROM users WHERE email = ?', [adminEmail]);
+    const adminExists = await this.get('SELECT id FROM users WHERE email = $1', [adminEmail]);
     
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await this.run(
-        'INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)',
+        'INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4)',
         ['admin-001', 'Administrator', adminEmail, hashedPassword]
       );
       console.log('Default admin user created:', adminEmail);
     }
   }
 
-  run(query, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(query, params, function(err) {
-        if (err) {
-          console.error('Database run error:', err);
-          reject(err);
-        } else {
-          resolve({ id: this.lastID, changes: this.changes });
-        }
-      });
-    });
+  async run(query, params = []) {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(query, params);
+      return {
+        id: result.rows[0]?.id || null,
+        changes: result.rowCount,
+        rows: result.rows
+      };
+    } catch (err) {
+      console.error('Database run error:', err);
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
-  get(query, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(query, params, (err, row) => {
-        if (err) {
-          console.error('Database get error:', err);
-          reject(err);
-        } else {
-          resolve(row);
-        }
-      });
-    });
+  async get(query, params = []) {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(query, params);
+      return result.rows[0] || null;
+    } catch (err) {
+      console.error('Database get error:', err);
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
-  all(query, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.all(query, params, (err, rows) => {
-        if (err) {
-          console.error('Database all error:', err);
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
+  async all(query, params = []) {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(query, params);
+      return result.rows;
+    } catch (err) {
+      console.error('Database all error:', err);
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
-  close() {
-    return new Promise((resolve, reject) => {
-      if (this.db) {
-        this.db.close((err) => {
-          if (err) {
-            reject(err);
-          } else {
-            console.log('Database connection closed');
-            resolve();
-          }
-        });
-      } else {
-        resolve();
-      }
-    });
+  async close() {
+    if (this.pool) {
+      await this.pool.end();
+      console.log('PostgreSQL connection pool closed');
+    }
   }
 }
 
@@ -141,7 +147,7 @@ const initializeDatabase = async () => {
 };
 
 const getDatabase = () => {
-  if (!database.db) {
+  if (!database.pool) {
     throw new Error('Database not initialized. Call initializeDatabase() first.');
   }
   return database;

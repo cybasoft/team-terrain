@@ -56,7 +56,7 @@ router.post(['/login', '/:webhookId'], validate(loginSchema), asyncHandler(async
   const db = getDatabase();
 
   // Find user by email
-  const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+  const user = await db.get('SELECT * FROM users WHERE email = $1', [email]);
 
   if (!user) {
     return res.status(401).json({
@@ -80,7 +80,7 @@ router.post(['/login', '/:webhookId'], validate(loginSchema), asyncHandler(async
 
   // Update last login timestamp
   await db.run(
-    'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
     [user.id]
   );
 
@@ -98,7 +98,7 @@ router.post('/register', validate(registerSchema), asyncHandler(async (req, res)
   const db = getDatabase();
 
   // Check if user already exists
-  const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+  const existingUser = await db.get('SELECT id FROM users WHERE email = $1', [email]);
 
   if (existingUser) {
     return res.status(409).json({
@@ -113,12 +113,12 @@ router.post('/register', validate(registerSchema), asyncHandler(async (req, res)
   // Create user
   const userId = uuidv4();
   await db.run(
-    'INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)',
+    'INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4)',
     [userId, name, email, hashedPassword]
   );
 
   // Get created user
-  const newUser = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+  const newUser = await db.get('SELECT * FROM users WHERE id = $1', [userId]);
 
   // Generate JWT token
   const token = generateToken(newUser);
@@ -148,7 +148,7 @@ router.get('/verify', asyncHandler(async (req, res) => {
     const db = getDatabase();
     
     // Get current user data
-    const user = await db.get('SELECT * FROM users WHERE id = ?', [decoded.id]);
+    const user = await db.get('SELECT * FROM users WHERE id = $1', [decoded.id]);
     
     if (!user) {
       return res.status(404).json({

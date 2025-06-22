@@ -13,10 +13,16 @@ const errorHandler = (err, req, res, next) => {
     error.message = err.details[0].message;
   }
 
-  // SQLite constraint error
-  if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+  // PostgreSQL constraint error
+  if (err.code === '23505') { // unique_violation
     error.status = 409;
     error.message = 'Resource already exists';
+  }
+
+  // PostgreSQL foreign key constraint error
+  if (err.code === '23503') { // foreign_key_violation
+    error.status = 400;
+    error.message = 'Referenced resource does not exist';
   }
 
   // JWT errors

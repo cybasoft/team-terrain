@@ -103,10 +103,14 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Database files
+# Database files (legacy SQLite references kept for safety)
 *.sqlite
 *.sqlite3
 *.db
+
+# PostgreSQL backup files
+*.sql.backup
+*.dump
 
 # PM2 files
 ecosystem.config.js

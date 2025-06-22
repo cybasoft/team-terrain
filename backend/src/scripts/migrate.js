@@ -13,11 +13,11 @@ const migrate = async () => {
     
     // Example: Add new columns if they don't exist
     try {
-      await db.run('ALTER TABLE users ADD COLUMN avatar_url TEXT');
+      await db.run('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT');
       console.log('Added avatar_url column to users table');
     } catch (error) {
       // Column might already exist, ignore error
-      if (!error.message.includes('duplicate column name')) {
+      if (!error.message.includes('already exists')) {
         throw error;
       }
     }

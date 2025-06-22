@@ -93,8 +93,8 @@ const seed = async () => {
     const db = getDatabase();
     
     // Clear existing seed data (except admin)
-    await db.run('DELETE FROM location_updates WHERE user_id NOT LIKE "admin-%"');
-    await db.run('DELETE FROM users WHERE id NOT LIKE "admin-%"');
+    await db.run('DELETE FROM location_updates WHERE user_id NOT LIKE $1', ['admin-%']);
+    await db.run('DELETE FROM users WHERE id NOT LIKE $1', ['admin-%']);
     
     console.log('Cleared existing seed data');
     
@@ -110,13 +110,13 @@ const seed = async () => {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
       await db.run(
-        'INSERT INTO users (id, name, email, password, coordinates, city, state, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (id, name, email, password, coordinates, city, state, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
         [userId, userData.name, userData.email, hashedPassword, userData.coordinates, userData.city, userData.state, userData.country]
       );
       
       // Add initial location update
       await db.run(
-        'INSERT INTO location_updates (user_id, coordinates, city, state, country) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO location_updates (user_id, coordinates, city, state, country) VALUES ($1, $2, $3, $4, $5)',
         [userId, userData.coordinates, userData.city, userData.state, userData.country]
       );
       

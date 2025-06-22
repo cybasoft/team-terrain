@@ -1,6 +1,6 @@
 # TeamTerrain Backend API
 
-Node.js backend with SQLite database for the TeamTerrain employee location management application.
+Node.js backend with PostgreSQL database for the TeamTerrain employee location management application.
 
 ## Features
 
@@ -8,7 +8,7 @@ Node.js backend with SQLite database for the TeamTerrain employee location manag
 - **JWT Authentication**: Secure token-based authentication
 - **User Management**: CRUD operations for users and locations
 - **Location Tracking**: Real-time updates with historical data
-- **Database**: SQLite with automatic migrations and seeding
+- **Database**: PostgreSQL with automatic migrations and seeding
 - **Security**: Rate limiting, CORS, input validation, password hashing
 - **Legacy Support**: Webhook compatibility for existing integrations
 
@@ -40,7 +40,11 @@ PORT=3001
 NODE_ENV=development
 
 # Database  
-DATABASE_PATH=./database.sqlite
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=teamterrain
+DB_USER=postgres
+DB_PASSWORD=password
 
 # Authentication
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
@@ -56,7 +60,24 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 ```
 
-### 3. Database Setup
+### 3. PostgreSQL Setup
+
+Install PostgreSQL and create the database:
+
+```bash
+# On macOS with Homebrew
+brew install postgresql
+brew services start postgresql
+
+# On Ubuntu/Debian
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# Create database
+psql -U postgres -c "CREATE DATABASE teamterrain;"
+```
+
+### 4. Database Setup
 
 ```bash
 # Initialize database and create tables
@@ -66,7 +87,7 @@ npm run db:migrate
 npm run db:seed
 ```
 
-### 4. Start Server
+### 5. Start Server
 
 ```bash
 # Development (with auto-reload)
@@ -208,18 +229,19 @@ After running `npm run db:seed`:
 ### Reset Database
 ```bash
 # Careful! This deletes all data
-rm database.sqlite
+psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS teamterrain;"
+psql -h localhost -U postgres -c "CREATE DATABASE teamterrain;"
 npm run db:migrate
 npm run db:seed
 ```
 
 ### Inspect Database
 ```bash
-sqlite3 database.sqlite
-.tables
-.schema users
+psql -h localhost -U postgres -d teamterrain
+\dt
+\d users
 SELECT * FROM users;
-.quit
+\q
 ```
 
 ## Environment Variables
@@ -228,7 +250,11 @@ SELECT * FROM users;
 |----------|-------------|---------|
 | `PORT` | Server port | `3001` |
 | `NODE_ENV` | Environment | `development` |
-| `DATABASE_PATH` | SQLite file path | `./database.sqlite` |
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `teamterrain` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | `password` |
 | `JWT_SECRET` | JWT signing secret | Required |
 | `JWT_EXPIRES_IN` | JWT expiration | `7d` |
 | `API_AUTH_TOKEN` | API authentication token | Required |
@@ -255,10 +281,10 @@ SELECT * FROM users;
 - Set appropriate admin emails in `ADMIN_EMAILS`
 
 ### Database Considerations
-- SQLite works for moderate traffic
-- Consider PostgreSQL/MySQL for high traffic
+- PostgreSQL is used for production-grade reliability
 - Ensure database backups are configured
-- Set proper file permissions for SQLite
+- Configure connection pooling for high traffic
+- Use environment variables for sensitive database credentials
 
 ### Hosting Recommendations
 - **Railway**: Easy Node.js deployment
@@ -389,7 +415,11 @@ After running the seed script:
 |----------|-------------|---------|
 | `PORT` | Server port | `3001` |
 | `NODE_ENV` | Environment | `development` |
-| `DATABASE_PATH` | SQLite database path | `./database.sqlite` |
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `teamterrain` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | `password` |
 | `JWT_SECRET` | JWT signing secret | Required |
 | `JWT_EXPIRES_IN` | JWT expiration | `7d` |
 | `API_AUTH_TOKEN` | API authentication token | Required |
@@ -420,7 +450,7 @@ npm test
 2. Use a strong `JWT_SECRET`
 3. Configure proper `API_AUTH_TOKEN`
 4. Set up proper CORS origins
-5. Consider using a proper database (PostgreSQL/MySQL) for production
+5. Configure PostgreSQL with proper security settings
 6. Set up reverse proxy (nginx)
 7. Use PM2 or similar for process management
 

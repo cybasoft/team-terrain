@@ -50,7 +50,7 @@ router.get('/user/:id', authenticateTokenOrApiKey, asyncHandler(async (req, res)
   const { id } = req.params;
   const db = getDatabase();
   
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+  const user = await db.get('SELECT * FROM users WHERE id = $1', [id]);
   
   if (!user) {
     return res.status(404).json({
@@ -72,7 +72,7 @@ router.put('/user/:id', authenticateTokenOrApiKey, validate(updateUserSchema), a
   const db = getDatabase();
   
   // Check if user exists
-  const existingUser = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+  const existingUser = await db.get('SELECT * FROM users WHERE id = $1', [id]);
   
   if (!existingUser) {
     return res.status(404).json({
@@ -83,7 +83,7 @@ router.put('/user/:id', authenticateTokenOrApiKey, validate(updateUserSchema), a
 
   // Check if email is already taken by another user
   if (email && email !== existingUser.email) {
-    const emailExists = await db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, id]);
+    const emailExists = await db.get('SELECT id FROM users WHERE email = $1 AND id != $2', [email, id]);
     if (emailExists) {
       return res.status(409).json({
         success: false,
@@ -97,32 +97,32 @@ router.put('/user/:id', authenticateTokenOrApiKey, validate(updateUserSchema), a
   const values = [];
   
   if (name !== undefined) {
-    updates.push('name = ?');
+    updates.push('name = $' + (values.length + 1));
     values.push(name);
   }
   
   if (email !== undefined) {
-    updates.push('email = ?');
+    updates.push('email = $' + (values.length + 1));
     values.push(email);
   }
   
   if (coordinates !== undefined) {
-    updates.push('coordinates = ?');
+    updates.push('coordinates = $' + (values.length + 1));
     values.push(coordinates);
   }
   
   if (city !== undefined) {
-    updates.push('city = ?');
+    updates.push('city = $' + (values.length + 1));
     values.push(city);
   }
   
   if (state !== undefined) {
-    updates.push('state = ?');
+    updates.push('state = $' + (values.length + 1));
     values.push(state);
   }
   
   if (country !== undefined) {
-    updates.push('country = ?');
+    updates.push('country = $' + (values.length + 1));
     values.push(country);
   }
 
@@ -136,12 +136,12 @@ router.put('/user/:id', authenticateTokenOrApiKey, validate(updateUserSchema), a
   updates.push('updated_at = CURRENT_TIMESTAMP');
   values.push(id);
 
-  const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+  const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $${values.length}`;
   
   await db.run(query, values);
 
   // Get updated user
-  const updatedUser = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+  const updatedUser = await db.get('SELECT * FROM users WHERE id = $1', [id]);
 
   res.json({
     success: true,
@@ -156,7 +156,7 @@ router.delete('/user/:id', authenticateTokenOrApiKey, asyncHandler(async (req, r
   const db = getDatabase();
   
   // Check if user exists
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+  const user = await db.get('SELECT * FROM users WHERE id = $1', [id]);
   
   if (!user) {
     return res.status(404).json({
@@ -166,10 +166,10 @@ router.delete('/user/:id', authenticateTokenOrApiKey, asyncHandler(async (req, r
   }
 
   // Delete user's location history
-  await db.run('DELETE FROM location_updates WHERE user_id = ?', [id]);
+  await db.run('DELETE FROM location_updates WHERE user_id = $1', [id]);
   
   // Delete user
-  await db.run('DELETE FROM users WHERE id = ?', [id]);
+  await db.run('DELETE FROM users WHERE id = $1', [id]);
 
   res.json({
     success: true,
@@ -183,7 +183,7 @@ router.get('/user/:id/locations', authenticateTokenOrApiKey, asyncHandler(async 
   const db = getDatabase();
   
   // Check if user exists
-  const user = await db.get('SELECT id FROM users WHERE id = ?', [id]);
+  const user = await db.get('SELECT id FROM users WHERE id = $1', [id]);
   
   if (!user) {
     return res.status(404).json({
@@ -193,7 +193,7 @@ router.get('/user/:id/locations', authenticateTokenOrApiKey, asyncHandler(async 
   }
 
   const locations = await db.all(
-    'SELECT * FROM location_updates WHERE user_id = ? ORDER BY timestamp DESC',
+    'SELECT * FROM location_updates WHERE user_id = $1 ORDER BY timestamp DESC',
     [id]
   );
 

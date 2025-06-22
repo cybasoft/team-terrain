@@ -23,7 +23,7 @@ router.post('/update', authenticateTokenOrApiKey, validate(locationUpdateSchema)
   }
 
   // Verify user exists
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [finalUserId]);
+  const user = await db.get('SELECT * FROM users WHERE id = $1', [finalUserId]);
   
   if (!user) {
     return res.status(404).json({
@@ -34,18 +34,18 @@ router.post('/update', authenticateTokenOrApiKey, validate(locationUpdateSchema)
 
   // Update user's current location
   await db.run(
-    'UPDATE users SET coordinates = ?, city = ?, state = ?, country = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    'UPDATE users SET coordinates = $1, city = $2, state = $3, country = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5',
     [coordinates, city || '', state || '', country || '', finalUserId]
   );
 
   // Add to location history
   await db.run(
-    'INSERT INTO location_updates (user_id, coordinates, city, state, country) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO location_updates (user_id, coordinates, city, state, country) VALUES ($1, $2, $3, $4, $5)',
     [finalUserId, coordinates, city || '', state || '', country || '']
   );
 
   // Get updated user
-  const updatedUser = await db.get('SELECT * FROM users WHERE id = ?', [finalUserId]);
+  const updatedUser = await db.get('SELECT * FROM users WHERE id = $1', [finalUserId]);
   
   // Format user response
   const { password, ...userWithoutPassword } = updatedUser;
@@ -82,7 +82,7 @@ router.get('/history/:userId', authenticateTokenOrApiKey, asyncHandler(async (re
   const db = getDatabase();
   
   // Verify user exists
-  const user = await db.get('SELECT id FROM users WHERE id = ?', [userId]);
+  const user = await db.get('SELECT id FROM users WHERE id = $1', [userId]);
   
   if (!user) {
     return res.status(404).json({
@@ -92,12 +92,12 @@ router.get('/history/:userId', authenticateTokenOrApiKey, asyncHandler(async (re
   }
 
   const locations = await db.all(
-    'SELECT * FROM location_updates WHERE user_id = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?',
+    'SELECT * FROM location_updates WHERE user_id = $1 ORDER BY timestamp DESC LIMIT $2 OFFSET $3',
     [userId, parseInt(limit), parseInt(offset)]
   );
 
   const total = await db.get(
-    'SELECT COUNT(*) as count FROM location_updates WHERE user_id = ?',
+    'SELECT COUNT(*) as count FROM location_updates WHERE user_id = $1',
     [userId]
   );
 
@@ -126,7 +126,7 @@ router.get('/all', authenticateTokenOrApiKey, asyncHandler(async (req, res) => {
     FROM location_updates lu
     JOIN users u ON lu.user_id = u.id
     ORDER BY lu.timestamp DESC
-    LIMIT ?
+    LIMIT $1
   `, [parseInt(limit)]);
 
   res.json({
@@ -142,7 +142,7 @@ router.delete('/history/:userId', authenticateTokenOrApiKey, asyncHandler(async 
   const db = getDatabase();
   
   // Verify user exists
-  const user = await db.get('SELECT id FROM users WHERE id = ?', [userId]);
+  const user = await db.get('SELECT id FROM users WHERE id = $1', [userId]);
   
   if (!user) {
     return res.status(404).json({
@@ -151,7 +151,7 @@ router.delete('/history/:userId', authenticateTokenOrApiKey, asyncHandler(async 
     });
   }
 
-  const result = await db.run('DELETE FROM location_updates WHERE user_id = ?', [userId]);
+  const result = await db.run('DELETE FROM location_updates WHERE user_id = $1', [userId]);
 
   res.json({
     success: true,
