@@ -17,45 +17,84 @@ A full-stack application for visualizing and managing employee locations on an i
 ## Architecture
 
 - **Frontend**: React + TypeScript + Vite + Mapbox GL JS
-- **Backend**: Node.js + Express + SQLite + JWT Auth
-- **Database**: SQLite with automatic migrations
+- **Backend**: Node.js + Express + PostgreSQL + JWT Auth
+- **Database**: PostgreSQL with automatic migrations
 - **Deployment**: Cloudflare Pages (frontend) + Node.js hosting (backend)
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
 
-- Node.js 18+
-- Bun (recommended) or npm
-- [Mapbox API token](https://account.mapbox.com/access-tokens/)
+The easiest way to run the entire application is using Docker:
 
-### Running Both Applications
+```bash
+# Clone the repository
+git clone <repository-url>
+cd teamterrain
+
+# Run the setup script
+./docker-setup.sh
+```
+
+This will:
+
+- Build and start all services (PostgreSQL, backend, frontend)
+- Initialize the database with sample data
+- Serve the frontend on `http://localhost`
+- Provide API access on `http://localhost:3001`
+
+**Default Credentials:**
+
+- Admin: `admin@teamterrain.com` / `admin123`
+
+**Docker Management:**
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Rebuild and restart
+docker-compose down && docker-compose build && docker-compose up -d
+```
+
+### Option 2: Manual Setup
 
 1. **Clone and setup**:
+
    ```bash
    git clone <repository-url>
    cd teamterrain
    ```
 
 2. **Start Backend** (Terminal 1):
+
    ```bash
    cd backend
-   npm install
+   bun install
    cp .env.example .env
    # Edit .env with your configuration
-   npm run db:migrate
-   npm run db:seed
-   npm start
+   bun run db:migrate
+   bun run db:seed
+   bun start
    ```
+
    Backend runs on `http://localhost:3001`
 
 3. **Start Frontend** (Terminal 2):
+
    ```bash
    cd frontend
    bun install
    # Edit .env with your Mapbox token
    bun run dev
    ```
+
    Frontend runs on `http://localhost:8080`
 
 4. **Access Application**: Open `http://localhost:8080`
@@ -96,6 +135,7 @@ Both applications require environment configuration:
 - **Frontend**: Copy `frontend/.env.example` → `frontend/.env`
 
 Key variables:
+
 - `VITE_MAPBOX_ACCESS_TOKEN` - Your Mapbox API token
 - `API_AUTH_TOKEN` - Must match between frontend and backend
 - `JWT_SECRET` - Backend JWT signing secret
@@ -154,6 +194,7 @@ teamterrain/
 ## Technology Stack
 
 ### Backend
+
 - **Node.js** with Express.js
 - **SQLite** database
 - **JWT** authentication
@@ -161,6 +202,7 @@ teamterrain/
 - **Joi** for validation
 
 ### Frontend
+
 - **React** with TypeScript
 - **Vite** for build tooling
 - **Mapbox GL JS** for mapping
@@ -170,15 +212,21 @@ teamterrain/
 ## Environment Configuration
 
 ### Backend (.env)
+
 ```env
 PORT=3001
 JWT_SECRET=your-secret-key
 API_AUTH_TOKEN=your-api-token
-DATABASE_PATH=./database.sqlite
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=teamterrain
+DB_USER=postgres
+DB_PASSWORD=password
 CORS_ORIGIN=http://localhost:8080
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_MAPBOX_ACCESS_TOKEN=your-mapbox-token
 VITE_API_BASE_URL=http://localhost:3001/api
@@ -201,11 +249,13 @@ VITE_API_AUTH_TOKEN=your-api-token
 ## Deployment
 
 ### Backend
+
 - Deploy to any Node.js hosting (Heroku, Railway, DigitalOcean)
 - Set production environment variables
 - Use PostgreSQL for production database
 
 ### Frontend
+
 - Deploy to Cloudflare Pages, Vercel, or Netlify
 - GitHub Actions workflow included for Cloudflare Pages
 
@@ -228,6 +278,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues and questions:
+
 - Check the [DEVELOPMENT.md](DEVELOPMENT.md) guide
 - Review the backend [README](backend/README.md)
 - Review the frontend [README](frontend/README.md)

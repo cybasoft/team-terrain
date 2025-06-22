@@ -1,0 +1,20 @@
+# Development Dockerfile - Multi-stage for backend and frontend
+FROM oven/bun:1-alpine AS base
+RUN apk add --no-cache postgresql-client nodejs npm
+WORKDIR /app
+
+# Backend stage
+FROM base AS backend
+COPY backend/package*.json backend/bun.lockb* ./backend/
+WORKDIR /app/backend
+RUN bun install --frozen-lockfile
+COPY backend/ .
+EXPOSE 3001
+
+# Frontend stage  
+FROM base AS frontend
+COPY frontend/package*.json frontend/bun.lockb* ./frontend/
+WORKDIR /app/frontend
+RUN bun install --frozen-lockfile
+COPY frontend/ .
+EXPOSE 8080

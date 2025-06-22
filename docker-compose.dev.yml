@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: teamterrain
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=teamterrain
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - API_AUTH_TOKEN=your-api-auth-token-change-this
+      - PORT=3001
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: bun run dev
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3001/api
+      - VITE_API_AUTH_TOKEN=your-api-auth-token-change-this
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    command: bun run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_dev_data:

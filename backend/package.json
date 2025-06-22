@@ -4,12 +4,12 @@
   "description": "Node.js backend for the Team Terrain application",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "start": "bun src/server.js",
+    "dev": "bun --watch src/server.js",
     "build": "echo 'No build step required for Node.js'",
     "test": "jest",
-    "db:migrate": "node src/scripts/migrate.js",
-    "db:seed": "node src/scripts/seed.js"
+    "db:migrate": "bun src/scripts/migrate.js",
+    "db:seed": "bun src/scripts/seed.js"
   },
   "keywords": [
     "express",

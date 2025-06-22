@@ -121,6 +121,7 @@ Available Mapbox map styles (user can switch via UI):
 ### Permission Levels
 
 **Admin Users** (configured via `VITE_ADMIN_EMAILS`):
+
 - Can view and manage all user locations
 - Can create pins for any user by clicking the map
 - Can drag any pin to update locations
@@ -128,6 +129,7 @@ Available Mapbox map styles (user can switch via UI):
 - Admin badge shown in header
 
 **Regular Users**:
+
 - Can only manage their own location pin
 - Click map to pin/update their location
 - Can only drag their own pin
@@ -209,7 +211,9 @@ frontend/src/
 ## Development Workflow
 
 ### 1. Setup Backend First
+
 Ensure the backend is running before starting frontend development:
+
 ```bash
 # In backend directory
 npm run db:migrate
@@ -218,17 +222,21 @@ npm start
 ```
 
 ### 2. Start Frontend
+
 ```bash
 # In frontend directory
 bun run dev
 ```
 
 ### 3. Test Authentication
+
 Use default accounts:
+
 - Admin: `admin@teamterrain.com` / `admin123`
 - User: `john.doe@teamterrain.com` / `password123`
 
 ### 4. Development Features
+
 - **Hot Reload**: Changes automatically refresh
 - **TypeScript**: Full type checking
 - **ESLint**: Code quality enforcement
@@ -237,6 +245,7 @@ Use default accounts:
 ## Building for Production
 
 ### Build Process
+
 ```bash
 bun run build
 ```
@@ -244,6 +253,7 @@ bun run build
 Output directory: `dist/`
 
 ### Environment Variables for Production
+
 - Set production API URLs in `VITE_API_BASE_URL`
 - Use production Mapbox token
 - Configure production admin emails
@@ -253,12 +263,14 @@ Output directory: `dist/`
 ### Deployment Options
 
 **Static Hosting (Recommended)**:
+
 - Cloudflare Pages (GitHub Actions included)
 - Vercel
 - Netlify  
 - AWS S3 + CloudFront
 
 **Configuration for Deployment**:
+
 - Ensure `_redirects` file is included for SPA routing
 - Set proper environment variables
 - Configure CORS on backend for your domain
@@ -268,22 +280,26 @@ Output directory: `dist/`
 ### Common Issues
 
 **Mapbox Token Errors**
+
 - Verify token is valid and not expired
 - Check token has required scopes
 - Ensure no leading/trailing spaces
 
 **API Connection Issues**  
+
 - Confirm backend is running on correct port
 - Check CORS settings in backend
 - Verify API endpoints match backend routes
 - Ensure `API_AUTH_TOKEN` matches between frontend/backend
 
 **Authentication Problems**
+
 - Check network requests in browser dev tools
 - Verify login credentials with backend test accounts
 - Clear localStorage to reset session state
 
 **Map Not Loading**
+
 - Check browser console for Mapbox errors
 - Verify internet connection
 - Test with different map styles
@@ -291,15 +307,18 @@ Output directory: `dist/`
 ### Development Tips
 
 **Environment Variables**
+
 - Restart dev server after changing `.env`
 - Use `.env.local` for local overrides (gitignored)
 
 **Debugging**
+
 - Set `VITE_DEBUG_MODE=true` for verbose logging
 - Use browser dev tools Network tab for API calls
 - Check console for validation errors
 
 **Performance**
+
 - Large datasets may need map clustering
 - Consider pagination for user lists
 - Optimize Mapbox token permissions
@@ -317,6 +336,7 @@ Output directory: `dist/`
 This frontend integrates with the TeamTerrain backend API. See [backend README](../backend/README.md) for API documentation.
 
 Key integrations:
+
 - Authentication via `/api/auth/login`
 - User data via `/api/users`
 - Location updates via `/api/location/update`
@@ -324,6 +344,7 @@ Key integrations:
 ## Support
 
 For frontend-specific issues:
+
 1. Check browser console for errors
 2. Verify environment variables
 3. Test API endpoints directly
@@ -361,7 +382,7 @@ The app has two levels of access for pin management:
    - Cannot see or select other users for pinning
    - Can only drag their own pin to move their location
    - Other pins appear locked with reduced opacity
-   
+
    **Admin users** can drag any existing pin to a new location and have visual indicators showing their admin status
 
 ### User Interface

@@ -4,7 +4,7 @@ This guide will help you set up and run both the frontend and backend of the Tea
 
 ## Project Structure
 
-```
+```txt
 team-terrain/
 ├── backend/           # Node.js + SQLite backend
 │   ├── src/
@@ -69,6 +69,7 @@ The frontend will start on `http://localhost:8080`
 ## Environment Configuration
 
 ### Backend (.env)
+
 ```env
 PORT=3001
 NODE_ENV=development
@@ -80,6 +81,7 @@ CORS_ORIGIN=http://localhost:8080,
 ```
 
 ### Frontend Environment Variables
+
 Update your frontend environment to point to the local backend:
 
 ```env
@@ -95,6 +97,7 @@ VITE_LOGIN_ENDPOINT=/auth/login
 You can test the API endpoints using curl or a tool like Postman:
 
 ### Login
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
@@ -102,12 +105,14 @@ curl -X POST http://localhost:3001/api/auth/login \
 ```
 
 ### Get Users (with API token)
+
 ```bash
 curl -X GET http://localhost:3001/api/users \
   -H "Authorization: Bearer dev-api-auth-token-change-this"
 ```
 
 ### Health Check
+
 ```bash
 curl http://localhost:3001/health
 ```
@@ -149,16 +154,19 @@ SELECT * FROM users;
 ## Troubleshooting
 
 ### Backend Issues
+
 - Check if port 3001 is already in use
 - Verify `.env` file exists and has correct values
 - Check database file permissions
 
 ### Frontend Issues  
+
 - Ensure backend is running first
 - Check API endpoints match backend routes
 - Verify CORS settings allow frontend origin
 
 ### Common Errors
+
 - **CORS errors**: Check `CORS_ORIGIN` in backend `.env`
 - **Auth failures**: Verify `API_AUTH_TOKEN` matches between frontend and backend
 - **Database errors**: Try resetting the database
@@ -166,6 +174,7 @@ SELECT * FROM users;
 ## Production Deployment
 
 ### Backend
+
 - Set `NODE_ENV=production`
 - Use strong secrets for `JWT_SECRET` and `API_AUTH_TOKEN`
 - Configure proper CORS origins
@@ -173,6 +182,7 @@ SELECT * FROM users;
 - Consider PostgreSQL for production database
 
 ### Frontend
+
 - Build with `bun run build`
 - Deploy `dist/` folder to static hosting
 - Update environment variables for production API
@@ -182,6 +192,7 @@ SELECT * FROM users;
 The backend provides a comprehensive RESTful API. See `backend/README.md` for detailed endpoint documentation.
 
 Key endpoints:
+
 - `/api/auth/*` - Authentication
 - `/api/users/*` - User management  
 - `/api/location/*` - Location tracking

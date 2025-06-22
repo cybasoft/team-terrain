@@ -23,7 +23,7 @@ Node.js backend with PostgreSQL database for the TeamTerrain employee location m
 
 ```bash
 cd backend
-npm install
+bun install
 ```
 
 ### 2. Environment Configuration
@@ -81,20 +81,20 @@ psql -U postgres -c "CREATE DATABASE teamterrain;"
 
 ```bash
 # Initialize database and create tables
-npm run db:migrate
+bun run db:migrate
 
 # Add sample data (optional)
-npm run db:seed
+bun run db:seed
 ```
 
 ### 5. Start Server
 
 ```bash
 # Development (with auto-reload)
-npm run dev
+bun run dev
 
 # Production
-npm start
+bun start
 ```
 
 Server runs on `http://localhost:3001`
@@ -205,7 +205,7 @@ CREATE TABLE location_updates (
 
 ## Default Test Accounts
 
-After running `npm run db:seed`:
+After running `bun run db:seed`:
 
 - **Admin**: `admin@teamterrain.com` / `admin123`
 - **John Doe**: `john.doe@teamterrain.com` / `password123` (Nairobi, Kenya)
@@ -218,11 +218,11 @@ After running `npm run db:seed`:
 
 | Script | Description |
 |--------|-------------|
-| `npm start` | Start production server |
-| `npm run dev` | Start development server with auto-reload |
-| `npm run db:migrate` | Initialize/update database schema |
-| `npm run db:seed` | Populate database with sample data |
-| `npm test` | Run tests (when implemented) |
+| `bun start` | Start production server |
+| `bun run dev` | Start development server with auto-reload |
+| `bun run db:migrate` | Initialize/update database schema |
+| `bun run db:seed` | Populate database with sample data |
+| `bun test` | Run tests (when implemented) |
 
 ## Database Management
 
@@ -231,8 +231,8 @@ After running `npm run db:seed`:
 # Careful! This deletes all data
 psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS teamterrain;"
 psql -h localhost -U postgres -c "CREATE DATABASE teamterrain;"
-npm run db:migrate
-npm run db:seed
+bun run db:migrate
+bun run db:seed
 ```
 
 ### Inspect Database
@@ -312,7 +312,7 @@ lsof -ti:3001 | xargs kill -9
 ```bash
 # Reset database
 rm database.sqlite
-npm run db:migrate
+bun run db:migrate
 ```
 
 **CORS Errors**
@@ -432,13 +432,13 @@ After running the seed script:
 
 ```bash
 # Start development server with auto-reload
-npm run dev
+bun run dev
 
 # Run database migrations
-npm run db:migrate
+bun run db:migrate
 
 # Seed sample data
-npm run db:seed
+bun run db:seed
 
 # Run tests (when implemented)
 npm test
