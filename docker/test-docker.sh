@@ -15,7 +15,7 @@ echo "✅ Main Dockerfile build successful"
 
 # Test 2: Build development Docker Compose
 echo "📦 Testing Docker Compose build..."
-docker-compose -f docker-compose.dev.yml build --no-cache
+docker compose -f docker-compose.dev.yml build --no-cache
 echo "✅ Docker Compose build successful"
 
 # Test 3: Quick container test (optional)

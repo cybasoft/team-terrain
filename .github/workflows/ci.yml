@@ -155,11 +155,11 @@ jobs:
           cp backend/.env.example backend/.env
           cp frontend/.env.example frontend/.env
           
-          # Test docker-compose build
-          docker-compose -f docker-compose.dev.yml build --no-cache
+          # Test docker compose build
+          docker compose -f docker-compose.dev.yml build --no-cache
           
           # Start services in background
-          docker-compose -f docker-compose.dev.yml up -d
+          docker compose -f docker-compose.dev.yml up -d
           
           # Wait for services to be ready
           echo "Waiting for services to start..."
@@ -173,7 +173,7 @@ jobs:
           curl -f http://localhost:3001/health || echo "Backend not ready (expected without proper setup)"
           
           # Show service status
-          docker-compose -f docker-compose.dev.yml ps
+          docker compose -f docker-compose.dev.yml ps
           
           # Cleanup
-          docker-compose -f docker-compose.dev.yml down -v
+          docker compose -f docker-compose.dev.yml down -v
