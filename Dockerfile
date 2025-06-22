@@ -27,8 +27,8 @@ FROM oven/bun:1-alpine
 # Install PostgreSQL, nginx, and supervisor
 RUN apk add --no-cache postgresql postgresql-contrib supervisor nginx nodejs npm
 
-# Create postgres user and directories
-RUN addgroup -S postgres && adduser -S postgres -G postgres
+# PostgreSQL user is automatically created by the package
+# Just ensure directories exist and have correct permissions
 RUN mkdir -p /var/lib/postgresql/data /var/log/postgresql
 RUN chown -R postgres:postgres /var/lib/postgresql /var/log/postgresql
 

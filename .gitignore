@@ -100,3 +100,4 @@ temp/
 
 # Docker files
 .dockerignore
+OPEN_SOURCE_CHECKLIST.md
