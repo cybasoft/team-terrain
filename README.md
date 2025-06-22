@@ -29,8 +29,8 @@ The easiest way to run the entire application is using Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/employees-map.git
-cd employees-map
+git clone https://github.com/yourusername/team-terrain.git
+cd team-terrain
 
 # Run the setup script
 ./docker-setup.sh
