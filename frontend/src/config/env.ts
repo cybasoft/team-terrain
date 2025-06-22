@@ -22,7 +22,7 @@ export const config = {
 
   // API Configuration
   api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://n8.cybasoft.com',
+    baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
     authToken: import.meta.env.VITE_API_AUTH_TOKEN || '',
     endpoints: {
       locationTracker: import.meta.env.VITE_LOCATION_TRACKER_ENDPOINT || '/webhook-test/fa854d30-aefc-4f26-b3d7-e38a1551e448',

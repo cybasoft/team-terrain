@@ -58,41 +58,14 @@ typings/
 
 # dotenv environment variables file
 .env
-.env.test
 .env.local
-.env.production
+.env.development.local
+.env.test.local
+.env.production.local
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-public
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
-
-# Editor directories and files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Environment files
+backend/.env
+frontend/.env
 
 # OS generated files
 .DS_Store
@@ -103,16 +76,27 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Database files (legacy SQLite references kept for safety)
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database files
 *.sqlite
 *.sqlite3
 *.db
 
-# PostgreSQL backup files
-*.sql.backup
-*.dump
+# Build outputs
+dist/
+build/
+backend/dist/
+frontend/dist/
 
-# PM2 files
-ecosystem.config.js
-.pm2/
-.env
+# Temporary files
+tmp/
+temp/
+
+# Docker files
+.dockerignore

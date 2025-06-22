@@ -29,8 +29,8 @@ The easiest way to run the entire application is using Docker:
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd teamterrain
+git clone https://github.com/yourusername/employees-map.git
+cd employees-map
 
 # Run the setup script
 ./docker-setup.sh
@@ -68,8 +68,8 @@ docker-compose down && docker-compose build && docker-compose up -d
 1. **Clone and setup**:
 
    ```bash
-   git clone <repository-url>
-   cd teamterrain
+   git clone https://github.com/yourusername/team-terrain.git
+   cd team-terrain
    ```
 
 2. **Start Backend** (Terminal 1):
