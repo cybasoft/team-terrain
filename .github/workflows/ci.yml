@@ -95,7 +95,7 @@ jobs:
           EOF
 
       - name: Lint frontend code
-        run: bun run lint
+        run: bun run lint --max-warnings 10
         working-directory: ./frontend
 
       - name: Build frontend
