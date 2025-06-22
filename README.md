@@ -56,9 +56,9 @@ A full-stack application for visualizing and managing employee locations on an i
    # Edit .env with your Mapbox token
    bun run dev
    ```
-   Frontend runs on `http://localhost:5173`
+   Frontend runs on `http://localhost:8080`
 
-4. **Access Application**: Open `http://localhost:5173`
+4. **Access Application**: Open `http://localhost:8080`
 
 ### Test Accounts
 
@@ -128,7 +128,7 @@ See individual README files for deployment details.
 - **Frontend Help**: See [frontend/README.md](./frontend/README.md)
 - **Development**: See [DEVELOPMENT.md](./DEVELOPMENT.md)
 
-4. **Open your browser**: Visit `http://localhost:5173`
+4. **Open your browser**: Visit `http://localhost:8080`
 
 5. **Login**: Use `admin@teamterrain.com` / `admin123` or any test user
 
@@ -175,7 +175,7 @@ PORT=3001
 JWT_SECRET=your-secret-key
 API_AUTH_TOKEN=your-api-token
 DATABASE_PATH=./database.sqlite
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:8080
 ```
 
 ### Frontend (.env)

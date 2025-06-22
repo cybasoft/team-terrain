@@ -67,7 +67,7 @@ bun run dev
 # or: npm run dev
 ```
 
-Frontend runs on `http://localhost:5173`
+Frontend runs on `http://localhost:8080`
 
 ## Environment Variables
 

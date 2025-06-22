@@ -64,7 +64,7 @@ bun install
 bun run dev
 ```
 
-The frontend will start on `http://localhost:5173`
+The frontend will start on `http://localhost:8080`
 
 ## Environment Configuration
 
@@ -76,7 +76,7 @@ DATABASE_PATH=./database.sqlite
 JWT_SECRET=dev-super-secret-jwt-key-change-in-production
 API_AUTH_TOKEN=dev-api-auth-token-change-this
 ADMIN_EMAILS=admin@teamterrain.com
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:8080,
 ```
 
 ### Frontend Environment Variables
@@ -127,7 +127,7 @@ After running `npm run db:seed`:
 
 1. **Start Backend**: `cd backend && npm run dev`
 2. **Start Frontend**: `cd frontend && bun run dev`
-3. **Open Browser**: Visit `http://localhost:5173`
+3. **Open Browser**: Visit `http://localhost:8080`
 4. **Login**: Use any of the test accounts above
 
 ## Database Management
